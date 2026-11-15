@@ -16,8 +16,12 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    // diisi di bab 3 sampai 9
+    Route::resource('pelanggan', PelangganController::class)->except(['show', 'destroy']);
+    Route::resource('kurir', KurirController::class)->except(['show', 'destroy']);
+    Route::post('kurir/{kurir}/reset-password', [KurirController::class, 'resetPassword'])->name('kurir.reset');
+    Route::post('kurir/{kurir}/nonaktifkan', [KurirController::class, 'nonaktifkan'])->name('kurir.nonaktif');
 });
 Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')->group(function () {
-    // diisi di bab 4 dan 10
+    Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan');
+    Route::get('kurir', [KurirController::class, 'index'])->name('kurir');
 });

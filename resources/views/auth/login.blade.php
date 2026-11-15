@@ -23,7 +23,7 @@
     </style>
 </head>
 <body>
-    <form class="kartu" method="POST" action="{{ url('login.proses') }}">
+    <form class="kartu" method="POST" action="/login">
         @csrf
         <img src="{{ asset('img/logo_priangan_kilat_express.png') }}" alt="Priangan Kilat Express">
 
