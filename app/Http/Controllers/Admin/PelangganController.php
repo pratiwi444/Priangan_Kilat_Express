@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pelanggan;
+use App\Rules\TeleponValid;
+use App\Support\Telepon;
 use Illuminate\Http\Request;
 
 class PelangganController extends Controller

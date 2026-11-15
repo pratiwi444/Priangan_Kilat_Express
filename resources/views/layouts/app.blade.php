@@ -15,9 +15,11 @@
       @if (auth()->user()->role === 'admin')
         <a class="text-white" href="{{ route('admin.pelanggan.index') }}">Pelanggan</a>
         <a class="text-white" href="{{ route('admin.kurir.index') }}">Kurir</a>
+        <a class="text-white" href="{{ route('admin.tarif') }}">Tarif</a>
       @elseif (auth()->user()->role === 'manajer')
         <a class="text-white" href="{{ route('manajer.pelanggan') }}">Data Pelanggan</a>
         <a class="text-white" href="{{ route('manajer.kurir') }}">Data Kurir</a>
+        <a class="text-white" href="{{ route('manajer.tarif') }}">Tarif</a>
       @endif
       <span>{{ auth()->user()->nama }} ({{ auth()->user()->role }})</span>
       <a class="btn btn-sm btn-outline-light" href="/ganti-password">Ganti password</a>

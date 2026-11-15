@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kurir;
+use App\Models\User;
+use App\Rules\TeleponValid;
+use App\Support\Telepon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KurirController extends Controller
 {

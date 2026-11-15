@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\{PelangganController, KurirController};
+use App\Http\Controllers\TarifController;
 use App\Http\Controllers\{AuthController, CekResiController};
 
 //Route::get('/', fn () => redirect('/cek-resi'));
@@ -20,8 +22,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('kurir', KurirController::class)->except(['show', 'destroy']);
     Route::post('kurir/{kurir}/reset-password', [KurirController::class, 'resetPassword'])->name('kurir.reset');
     Route::post('kurir/{kurir}/nonaktifkan', [KurirController::class, 'nonaktifkan'])->name('kurir.nonaktif');
+    Route::get('tarif', [TarifController::class, 'index'])->name('tarif');
 });
 Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')->group(function () {
     Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan');
     Route::get('kurir', [KurirController::class, 'index'])->name('kurir');
+    Route::get('tarif', [TarifController::class, 'index'])->name('tarif');
+Route::post('tarif/{zona}', [TarifController::class, 'update'])->name('tarif.update');
 });
