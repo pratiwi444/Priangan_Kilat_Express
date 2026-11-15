@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Paket extends Model
 {
+    public $timestamps = false;
     protected $table = 'paket';
     protected $guarded = [];
     protected $casts = [

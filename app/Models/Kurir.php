@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Kurir extends Model
 {
+    public $timestamps = false;
     protected $table = 'kurir';
     protected $fillable = ['user_id', 'kode_kurir', 'nama', 'telepon', 'aktif'];
     protected $casts = ['aktif' => 'boolean'];

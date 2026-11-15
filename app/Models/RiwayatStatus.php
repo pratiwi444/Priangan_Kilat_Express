@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RiwayatStatus extends Model
 {
+    public $timestamps = false;
     protected $table = 'riwayat_status';
     protected $guarded = [];
     protected $casts = [

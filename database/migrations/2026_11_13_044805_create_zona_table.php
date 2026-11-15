@@ -14,9 +14,7 @@ return new class extends Migration
         Schema::create('zona', function (Blueprint $table) {
             $table->id();
             $table->string('nama', 50);
-            $table->string('wilayah', 100);
             $table->unsignedInteger('tarif_per_kg');
-            $table->timestamps();
         });
     }
 

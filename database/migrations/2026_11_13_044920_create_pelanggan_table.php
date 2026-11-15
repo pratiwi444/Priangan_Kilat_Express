@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('nama', 100);
             $table->string('telepon', 15);
             $table->string('alamat', 255)->nullable();
-            $table->timestamps();
         });
     }
 

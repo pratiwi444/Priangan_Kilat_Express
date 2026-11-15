@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('nama', 100);
             $table->string('telepon', 15);
             $table->boolean('aktif')->default(true);
-            $table->timestamps();
         });
     }
 

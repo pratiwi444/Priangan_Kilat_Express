@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('setoran_cod', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('paket_id')->constrained('paket');
+            $table->foreignId('paket_id')->unique()->constrained('paket');
             $table->foreignId('dicatat_oleh')->nullable()->constrained('users');
             $table->dateTime('waktu');
-            $table->timestamps();
         });
     }
 

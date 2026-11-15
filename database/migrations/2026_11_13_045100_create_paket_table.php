@@ -33,7 +33,6 @@ return new class extends Migration
         $table->string('status', 20)->default('diterima');
         $table->unsignedTinyInteger('jumlah_gagal')->default(0);
         $table->date('tanggal_masuk');
-        $table->timestamps();
 
         $table->index('status');
         $table->index('tanggal_masuk');

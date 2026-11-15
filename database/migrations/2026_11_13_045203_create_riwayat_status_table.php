@@ -19,7 +19,6 @@ return new class extends Migration
             $table->foreignId('pelaku_id')->nullable()->constrained('users');
             $table->string('catatan', 255)->nullable();
             $table->dateTime('waktu');
-            $table->timestamps();
         });
     }
 

@@ -13,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    public $timestamps = false;
 
     protected $fillable = ['nama', 'username', 'password', 'role', 'wajib_ganti_password'];
 
