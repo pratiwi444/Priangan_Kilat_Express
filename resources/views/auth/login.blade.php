@@ -23,9 +23,9 @@
     </style>
 </head>
 <body>
-    <form class="kartu" method="POST" action="{{ route('login.proses') }}">
+    <form class="kartu" method="POST" action="{{ url('login.proses') }}">
         @csrf
-        <img src="{{ asset('img/logo.png') }}" alt="Priangan Kilat Express">
+        <img src="{{ asset('img/logo_priangan_kilat_express.png') }}" alt="Priangan Kilat Express">
 
         @error('login') <div class="error">{{ $message }}</div> @enderror
 
