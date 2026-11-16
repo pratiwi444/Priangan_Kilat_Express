@@ -76,6 +76,24 @@
   @endif
 </div></div>
 
+@if ($paket->status === StatusPaket::Transit || ($paket->status === StatusPaket::GagalKirim && $paket->jumlah_gagal < 2))
+<div class="card mt-3"><div class="card-body">
+  <h6>Tugaskan ke kurir</h6>
+  <form method="post" action="{{ route('admin.paket.tugaskan', $paket) }}" class="row g-2">
+    @csrf
+    <div class="col-md-6">
+      <select name="kurir_id" class="form-select">
+        <option value="">Pilih kurir</option>
+        @foreach ($kurir as $k)
+          <option value="{{ $k->id }}">{{ $k->kode_kurir }} - {{ $k->nama }}</option>
+        @endforeach
+      </select>
+    </div>
+    <div class="col-auto"><button class="btn btn-dark">Tugaskan ke Kurir</button></div>
+  </form>
+</div></div>
+@endif
+
 <div class="card mt-3"><div class="card-body">
   <h6>Riwayat status</h6>
   <table class="table table-sm mb-0">

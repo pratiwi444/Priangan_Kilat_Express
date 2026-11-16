@@ -25,6 +25,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('tarif', [TarifController::class, 'index'])->name('tarif');
     Route::resource('paket', PaketController::class)->only(['index', 'create', 'store', 'show']);
     Route::post('paket/{paket}/status', [PaketController::class, 'ubahStatus'])->name('paket.status');
+    Route::post('paket/{paket}/tugaskan', [PaketController::class, 'tugaskan'])->name('paket.tugaskan');
 });
 Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')->group(function () {
     Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan');

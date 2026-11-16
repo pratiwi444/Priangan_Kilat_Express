@@ -89,4 +89,11 @@ class PaketController extends Controller
         return back()->with('ok', 'Status paket diperbarui.');
     }
 
+    public function tugaskan(Paket $paket, Request $r)
+    {
+        $r->validate(['kurir_id' => 'required|exists:kurir,id']);
+        $this->svc->tugaskan($paket, kurir::findOrFail($r->kurir_id), $r->user());
+        return back()->with('ok', 'Paket ditugaskan. ');
+    }
+
 }
