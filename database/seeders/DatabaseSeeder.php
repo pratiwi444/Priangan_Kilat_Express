@@ -10,16 +10,19 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach ([
-            ['nama' => 'Zona 1 (Bandung Raya)', 'tarif_per_kg' => 8000],
-            ['nama' => 'Zona 2 (Jawa Barat lainnya)', 'tarif_per_kg' => 12000],
-            ['nama' => 'Zona 3 (luar Jawa Barat)', 'tarif_per_kg' => 20000],
-    ] as $z) {
-        Zona::updateOrCreate(['nama' => $z['nama']], $z);
-    }
-    User::updateOrCreate(['username' => 'admin'],
-        ['nama' => 'Admin Loket', 'password' => Hash::make('admin12345'), 'role' => 'admin']);
-    User::updateOrCreate(['username' => 'manajer'],
-        ['nama' => 'Manajer', 'password' => Hash::make('manajer12345'), 'role' => 'manajer']);
+        // id zona = nomor zona (1, 2, 3), karena Pusat Wilayah mengembalikan nomor zona
+        $zona = [
+            1 => ['Zona 1 (Bandung Raya)', 8000],
+            2 => ['Zona 2 (Jawa Barat lainnya)', 12000],
+            3 => ['Zona 3 (luar Jawa Barat)', 20000],
+        ];
+        foreach ($zona as $id => [$nama, $tarif]) {
+            Zona::updateOrCreate(['id' => $id], ['nama' => $nama, 'tarif_per_kg' => $tarif]);
+        }
+
+        User::updateOrCreate(['username' => 'admin'],
+            ['nama' => 'Admin Loket', 'password' => Hash::make('admin12345'), 'role' => 'admin']);
+        User::updateOrCreate(['username' => 'manajer'],
+            ['nama' => 'Manajer', 'password' => Hash::make('manajer12345'), 'role' => 'manajer']);
     }
 }

@@ -13,6 +13,7 @@
     <div class="d-flex gap-3 align-items-center text-white">
       {{-- Menu: tambahkan satu tautan per bab yang selesai --}}
       @if (auth()->user()->role === 'admin')
+        <a class="text-white" href="{{ route('admin.paket.index') }}">Paket</a>
         <a class="text-white" href="{{ route('admin.pelanggan.index') }}">Pelanggan</a>
         <a class="text-white" href="{{ route('admin.kurir.index') }}">Kurir</a>
         <a class="text-white" href="{{ route('admin.tarif') }}">Tarif</a>
