@@ -74,4 +74,42 @@ class PaketService
             'pelaku_id' => $pelaku?->id, 'catatan' => $catatan, 'waktu' => now(),
         ]);
     }
+
+    /** Satu-satunya pintu untuk mengubah status. Dipakai web (Admin) dan API (Kurir). */
+public function ubahStatus(Paket $p, StatusPaket $baru, User $pelaku, ?string $catatan = null): Paket
+{
+    return DB::transaction(function () use ($p, $baru, $pelaku, $catatan) {
+        $p = Paket::whereKey($p->id)->lockForUpdate()->firstOrFail();
+        $lama = $p->status;
+
+        if ($lama->final()) $this->tolak('Paket ' . $lama->label() . ' sudah final, tidak bisa diubah.');
+
+        $boleh = match (true) {
+            $pelaku->role === 'admin' && $lama === StatusPaket::Diterima && $baru === StatusPaket::Transit => true,
+            $pelaku->role === 'admin' && $lama === StatusPaket::GagalKirim && $baru === StatusPaket::Retur => true,
+            $pelaku->role === 'kurir' && $lama === StatusPaket::Dikirim
+                && in_array($baru, [StatusPaket::Terkirim, StatusPaket::GagalKirim], true) => true,
+            default => false,
+        };
+        if (!$boleh) $this->tolak('Perubahan ' . $lama->label() . ' ke ' . $baru->label() . ' tidak diizinkan untuk peran ini.');
+
+        if ($baru === StatusPaket::GagalKirim) {
+            if (blank($catatan)) $this->tolak('Catatan wajib diisi untuk Gagal Kirim.');
+            $p->jumlah_gagal++;
+        }
+        if ($baru === StatusPaket::Retur && $p->jumlah_gagal < 2) {
+            $this->tolak('Retur hanya bisa setelah paket gagal kirim 2 kali.');
+        }
+
+        $p->status = $baru;
+        $p->save();
+        $this->catat($p, $lama, $baru, $pelaku, $catatan);
+        return $p;
+    });
+}
+
+private function tolak(string $pesan): never
+{
+    throw ValidationException::withMessages(['status' => $pesan]);
+}
 }

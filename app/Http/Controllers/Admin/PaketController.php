@@ -8,6 +8,7 @@ use App\Models\{Kurir, Paket, Pelanggan, Zona};
 use App\Rules\TeleponValid;
 use App\Services\PaketService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PaketController extends Controller
 {
@@ -77,4 +78,15 @@ class PaketController extends Controller
             'kurir' => Kurir::where('aktif', true)->orderBy('kode_kurir')->get(),   // dipakai di Bab 7
         ]);
     }
+
+    public function ubahStatus(Paket $paket, Request $r)
+    {
+        $d = $r->validate([
+            'status'  => ['required', Rule::enum(StatusPaket::class)],
+            'catatan' => 'nullable|max:255',
+        ]);
+        $this->svc->ubahStatus($paket, StatusPaket::from($d['status']), $r->user(), $d['catatan'] ?? null);
+        return back()->with('ok', 'Status paket diperbarui.');
+    }
+
 }

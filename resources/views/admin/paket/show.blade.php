@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@use('App\Enums\StatusPaket')
 @section('judul', 'Paket ' . $paket->no_resi)
 @section('isi')
 @php
@@ -47,7 +48,33 @@
   </div>
 </div>
 
-{{-- Bab 6: tombol ubah status. Bab 7: form tugaskan ke kurir. Bab 9: setoran COD. --}}
+    <div class="card mt-3"><div class="card-body">
+  <h6>Ubah status</h6>
+  @php
+    $opsi = [];
+    if ($paket->status === StatusPaket::Diterima) $opsi = [StatusPaket::Transit];
+    elseif ($paket->status === StatusPaket::GagalKirim && $paket->jumlah_gagal >= 2) $opsi = [StatusPaket::Retur];
+  @endphp
+  @if ($opsi)
+    <form method="post" action="{{ route('admin.paket.status', $paket) }}" class="row g-2">
+      @csrf
+      <div class="col-md-4">
+        <select name="status" class="form-select">
+          @foreach ($opsi as $o)<option value="{{ $o->value }}">{{ $o->label() }}</option>@endforeach
+        </select>
+      </div>
+      <div class="col-md-6"><input name="catatan" class="form-control" placeholder="Catatan (opsional)"></div>
+      <div class="col-auto"><button class="btn btn-dark">Simpan</button></div>
+    </form>
+  @else
+    <p class="text-muted mb-0">
+      @if ($paket->status->final()) Status sudah final.
+      @elseif ($paket->status === StatusPaket::Dikirim) Status diubah oleh kurir lewat APK.
+      @else Paket ini ditugaskan ke kurir lewat menu Penugasan Kurir (bab 7).
+      @endif
+    </p>
+  @endif
+</div></div>
 
 <div class="card mt-3"><div class="card-body">
   <h6>Riwayat status</h6>

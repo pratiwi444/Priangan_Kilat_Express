@@ -17,9 +17,8 @@ class DatabaseSeeder extends Seeder
             3 => ['Zona 3 (luar Jawa Barat)', 20000],
         ];
         foreach ($zona as $id => [$nama, $tarif]) {
-            Zona::updateOrCreate(['id' => $id], ['nama' => $nama, 'tarif_per_kg' => $tarif]);
+            Zona::firstOrCreate(['id' => $id], ['nama' => $nama, 'tarif_per_kg' => $tarif]);
         }
-
         User::updateOrCreate(['username' => 'admin'],
             ['nama' => 'Admin Loket', 'password' => Hash::make('admin12345'), 'role' => 'admin']);
         User::updateOrCreate(['username' => 'manajer'],
