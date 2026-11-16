@@ -25,6 +25,9 @@
       </div>
     </div>
 
+    <label class="form-label">Alamat penerima</label>
+    <input name="alamat_penerima" class="form-control mb-2" value="{{ old('alamat_penerima') }}">
+
     <label class="form-label">Kota tujuan</label>
     <input name="kota_tujuan" class="form-control mb-2" value="{{ old('kota_tujuan') }}">
 

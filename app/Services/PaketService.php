@@ -26,7 +26,7 @@ class PaketService
             $zona = Zona::findOrFail($d['zona_id_manual']);
             $manual = true;
         } else {
-            $zona = Zona::where('nama', 'Zona ' . $zonaNo)->firstOrFail();
+           $zona = Zona::findOrFail($zonaNo);
         }
 
         $ongkir = Tarif::ongkir((float) $d['berat'], $zona->tarif_per_kg, $d['layanan']);
@@ -41,6 +41,7 @@ class PaketService
                 'nama_penerima'    => $d['nama_penerima'],
                 'telepon_penerima' => Telepon::normalisasi($d['telepon_penerima']),
                 'kota_tujuan'      => $d['kota_tujuan'],
+                'alamat_penerima'  => $d['alamat_penerima'] ?? null, 
                 'zona_manual'      => $manual,
                 'berat'            => $d['berat'],
                 'layanan'          => $d['layanan'],

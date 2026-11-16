@@ -47,6 +47,7 @@ class PaketController extends Controller
             'nama_penerima'    => 'required|max:100',
             'telepon_penerima' => ['required', new TeleponValid],
             'kota_tujuan'      => 'required|max:100',
+            'alamat_penerima' => 'nullable|max:255',
             'berat'            => 'required|numeric|gt:0',
             'layanan'          => 'required|in:reguler,express',
             'is_cod'           => 'nullable|boolean',
