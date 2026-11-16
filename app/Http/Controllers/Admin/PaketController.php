@@ -96,4 +96,23 @@ class PaketController extends Controller
         return back()->with('ok', 'Paket ditugaskan. ');
     }
 
+    public function cekZona(Request $r)
+{
+    $d = $r->validate([
+        'kota_tujuan'    => 'required|max:100',
+        'berat'          => 'required|numeric|gt:0',
+        'layanan'        => 'required|in:reguler,express',
+        'nilai_cod'      => 'nullable|integer|min:1',
+        'zona_id_manual' => 'nullable|exists:zona,id',
+    ], [
+        'required'  => ':attribute wajib diisi untuk cek zona.',
+        'berat.gt'  => 'Berat harus lebih dari nol.',
+        'numeric'   => ':attribute harus berupa angka.',
+    ], [
+        'kota_tujuan' => 'Kota tujuan', 'berat' => 'Berat', 'layanan' => 'Layanan',
+    ]);
+
+    return response()->json($this->svc->pratinjau($d));
+}
+
 }

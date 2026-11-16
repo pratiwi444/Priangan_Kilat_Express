@@ -108,6 +108,31 @@ public function ubahStatus(Paket $p, StatusPaket $baru, User $pelaku, ?string $c
     });
 }
 
+/** Hitung zona dan biaya tanpa menyimpan apa pun (untuk tombol Cek zona). */
+public function pratinjau(array $d): array
+{
+    $no = $this->wilayah->cariZona($d['kota_tujuan']);
+    $zona = $no !== null
+        ? Zona::find($no)
+        : (!empty($d['zona_id_manual']) ? Zona::find($d['zona_id_manual']) : null);
+
+    if ($zona === null) return ['zona_ditemukan' => false];
+
+    $ongkir   = Tarif::ongkir((float) $d['berat'], $zona->tarif_per_kg, $d['layanan']);
+    $nilai    = (int) ($d['nilai_cod'] ?? 0);
+    $biayaCod = $nilai > 0 ? Tarif::biayaCod($nilai) : 0;
+
+    return [
+        'zona_ditemukan' => true,
+        'manual'         => $no === null,
+        'zona'           => $zona->nama,
+        'tarif_per_kg'   => $zona->tarif_per_kg,
+        'ongkir'         => $ongkir,
+        'biaya_cod'      => $biayaCod,
+        'total'          => $ongkir + $biayaCod,
+    ];
+}
+
 public function tugaskan(Paket $p, Kurir $kurir, User $admin): Paket
 {
     return DB::transaction(function () use ($p, $kurir, $admin) {

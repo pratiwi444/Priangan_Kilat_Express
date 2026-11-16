@@ -23,6 +23,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('kurir/{kurir}/reset-password', [KurirController::class, 'resetPassword'])->name('kurir.reset');
     Route::post('kurir/{kurir}/nonaktifkan', [KurirController::class, 'nonaktifkan'])->name('kurir.nonaktif');
     Route::get('tarif', [TarifController::class, 'index'])->name('tarif');
+    Route::post('paket/cek-zona', [PaketController::class, 'cekZona'])->name('paket.cek-zona');
     Route::resource('paket', PaketController::class)->only(['index', 'create', 'store', 'show']);
     Route::post('paket/{paket}/status', [PaketController::class, 'ubahStatus'])->name('paket.status');
     Route::post('paket/{paket}/tugaskan', [PaketController::class, 'tugaskan'])->name('paket.tugaskan');
