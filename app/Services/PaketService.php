@@ -133,33 +133,6 @@ public function pratinjau(array $d): array
     ];
 }
 
-public function tugaskan(Paket $p, Kurir $kurir, User $admin): Paket
-{
-    return DB::transaction(function () use ($p, $kurir, $admin) {
-        $p = Paket::whereKey($p->id)->lockForUpdate()->firstOrFail();
-        $kurir = Kurir::whereKey($kurir->id)->lockForUpdate()->firstOrFail();
-        $lama = $p->status;
-
-        $bisa = $lama === StatusPaket::Transit
-            || ($lama === StatusPaket::GagalKirim && $p->jumlah_gagal < 2);
-        if (!$bisa) {
-            $this->tolak($lama === StatusPaket::GagalKirim
-                ? 'Paket sudah gagal kirim 2 kali, hanya bisa Retur.'
-                : 'Hanya paket Transit atau Gagal Kirim yang bisa ditugaskan.');
-        }
-        if (!$kurir->aktif) $this->tolak('Kurir nonaktif tidak bisa ditugaskan.');
-
-        $sedangDikirim = Paket::where('kurir_id', $kurir->id)->where('status', StatusPaket::Dikirim)->lockForUpdate()->count();
-        if ($sedangDikirim >= 20) $this->tolak('Kurir sudah membawa 20 paket Dikirim.');
-
-        $p->kurir_id = $kurir->id;
-        $p->status = StatusPaket::Dikirim;
-        $p->save();
-        $this->catat($p, $lama, StatusPaket::Dikirim, $admin, 'Ditugaskan ke kurir');
-        return $p;
-    });
-}
-
 private function tolak(string $pesan): never
 {
     throw ValidationException::withMessages(['status' => $pesan]);

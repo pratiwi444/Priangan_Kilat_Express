@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\{PelangganController, KurirController, PaketController, SetoranController};
+use App\Http\Controllers\Admin\{PelangganController, KurirController, PaketController, SetoranController, PenugasanController, ImporController};
 use App\Http\Controllers\TarifController;
 use App\Http\Controllers\{AuthController, CekResiController};
 use App\Http\Controllers\Manajer\LaporanController;
@@ -30,6 +30,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('paket/{paket}/tugaskan', [PaketController::class, 'tugaskan'])->name('paket.tugaskan');
     Route::get('setoran', [SetoranController::class, 'index'])->name('setoran.index');
     Route::post('setoran', [SetoranController::class, 'store'])->name('setoran.store');
+    Route::get('penugasan', [PenugasanController::class, 'index'])->name('penugasan');
+    Route::post('penugasan', [PenugasanController::class, 'store'])->name('penugasan.store');
+    Route::get('impor', [ImporController::class, 'index'])->name('impor');
+    Route::post('impor', [ImporController::class, 'store'])->name('impor.store');
 });
 Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')->group(function () {
     Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan');
@@ -38,5 +42,3 @@ Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')
     Route::post('tarif/{zona}', [TarifController::class, 'update'])->name('tarif.update');
     Route::get('laporan', [LaporanController::class, 'index'])->name('laporan');
 });
-Route::get('/', fn () => redirect('/cek-resi'));
-Route::get('/cek-resi', [CekResiController::class, 'index'])->name('cek-resi');
