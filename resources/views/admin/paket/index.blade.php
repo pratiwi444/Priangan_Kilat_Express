@@ -41,7 +41,12 @@
       <td>{{ $p->kota_tujuan }}</td>
       <td>{{ $p->zona?->nama }}@if ($p->zona_manual) <span class="badge bg-warning text-dark">manual</span>@endif</td>
       <td>{{ ucfirst($p->layanan) }}</td>
-      <td><span class="badge bg-{{ $warna[$p->status->value] }}">{{ $p->status->label() }}</span></td>
+     <td>
+      <span class="badge bg-{{ $warna[$p->status->value] }}">{{ $p->status->label() }}</span>
+      @if ($p->perlu_verifikasi)
+        <span class="badge bg-danger" title="Berat belum ada">Perlu verifikasi</span>
+      @endif
+      </td>
       <td>{{ $p->kurir?->kode_kurir ?? '-' }}</td>
     </tr>
   @empty

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->boolean('aktif')->default(true);
         });
     }
+    
 
     /**
      * Reverse the migrations.

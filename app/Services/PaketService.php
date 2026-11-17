@@ -7,6 +7,7 @@ use App\Services\PusatWilayah\PusatWilayahClient;
 use App\Support\Telepon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Support\Tarif;
 
 class PaketService
 {
@@ -58,6 +59,17 @@ class PaketService
             return $paket;
         });
     }
+
+     private function cariZonaAman(string $kota): ?int
+    {
+        try {
+            return $this->wilayah->cariZona($kota);
+        } catch (\Throwable $e) {
+            report($e);
+            return null;
+        }
+    }
+
 
     private function resiBaru(): string
     {

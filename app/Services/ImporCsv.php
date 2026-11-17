@@ -9,6 +9,7 @@ use App\Support\Telepon;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use App\Support\Tarif;
 
 /**
  * Impor data awal dari CSV. Dipakai oleh perintah `impor:data-awal` dan halaman Impor CSV.
@@ -103,35 +104,50 @@ class ImporCsv
 
     // ------------------------------------------------------------ paket historis
 
-    public function paket(string $berkas): array
-    {
-        [$baris, $lap] = $this->mulai($berkas, [
-            'no_resi', 'tanggal_terima', 'pengirim', 'penerima', 'telepon_penerima',
-            'kota_tujuan', 'berat_kg', 'layanan', 'status', 'kode_kurir', 'nilai_cod',
-        ]);
 
-        $sudahAda = [];
-        foreach ($baris as $no => $r) {
-            $lap['total']++;
-            $resi = strtoupper($r['no_resi']);
-            if ($resi === '') {
-                $this->tolak($lap, $no, 'nomor resi kosong');
-                continue;
-            }
-            if (isset($sudahAda[$resi])) {          // resi tercatat dua kali: ambil baris pertama saja
-                $lap['ganda']++;
-                continue;
-            }
-            $sudahAda[$resi] = true;
+public function paket(string $berkas): array
+{
+    [$baris, $lap] = $this->mulai($berkas, [
+        'no_resi', 'tanggal_terima', 'pengirim', 'penerima', 'telepon_penerima',
+        'kota_tujuan', 'berat_kg', 'layanan', 'status', 'kode_kurir', 'nilai_cod',
+    ]);
 
-            try {
-                $this->satuPaket($r, $resi, $lap);
-            } catch (\Throwable $e) {
-                $this->tolak($lap, $no, $e->getMessage());
-            }
+    $sudahAda = [];
+
+    foreach ($baris as $no => $r) {
+        $lap['total']++;
+        $resi = strtoupper(trim($r['no_resi']));
+
+        if ($resi === '') {
+            $this->tolak($lap, $no, 'nomor resi kosong');
+            continue;
         }
-        return $lap;
+
+        if (isset($sudahAda[$resi])) {
+            $lap['ganda']++;
+
+            $lap['resi_ganda'][] = [
+                'no_resi' => $resi,
+                'baris_pertama' => $sudahAda[$resi],
+                'baris_duplikat' => $no,
+            ];
+
+            continue;
+        }
+
+        // Simpan nomor baris pertama agar duplikat bisa dilaporkan.
+        $sudahAda[$resi] = $no;
+
+        try {
+            $this->satuPaket($r, $resi, $lap);
+        } catch (\Throwable $e) {
+            $this->tolak($lap, $no, $e->getMessage());
+        }
     }
+
+    return $lap;
+}
+
 
     private function satuPaket(array $r, string $resi, array &$lap): void
     {
@@ -271,6 +287,7 @@ class ImporCsv
             'total' => 0, 'masuk' => 0, 'dilewati' => 0, 'ganda' => 0, 'tanpa_berat' => 0,
             'telepon_dirapikan' => 0, 'nama_dirapikan' => 0, 'setoran' => 0, 'tanpa_zona' => 0,
             'tidak_valid' => [],
+            'resi_ganda' => [],
         ];
     }
 

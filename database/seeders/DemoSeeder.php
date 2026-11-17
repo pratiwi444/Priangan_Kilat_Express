@@ -85,8 +85,8 @@ class DemoSeeder extends Seeder
             ];
             foreach ($jalur as $i => [$dari, $ke, $catatan]) {
                 RiwayatStatus::create([
-                    'paket_id' => $paket->id, 'status_dari' => $dari, 'status_ke' => $ke,
-                    'pelaku_id' => $admin?->id, 'catatan' => $catatan, 'waktu' => now()->subMinutes(30 - $i * 10),
+                    'paket_id' => $paket->id, 'status_dari' => null, 'status_ke' => StatusPaket::Dikirim,
+                    'pelaku_id' => null, 'catatan' => 'Data demo (seeder)', 'waktu' => now(),
                 ]);
             }
 

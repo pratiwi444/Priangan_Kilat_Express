@@ -58,3 +58,9 @@ a { color: var(--primary); }
 /* Pemberitahuan */
 .alert-success { background:#E2F0E6; border-color:#B5D3BF; color:#1F4D32; }
 .alert-danger  { background:#F6E0E0; border-color:#E2B7B7; color:#7E2F2F; }
+
+/* Tanda pada daftar paket: (?) perlu verifikasi */
+.tanda { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+         border:2px solid #1D4ED8; border-radius:50%; color:#1D4ED8; background:#fff;
+         font-weight:700; font-size:13px; line-height:1; cursor:help; }
+.tanda-merah { border-color:#B91C1C; color:#B91C1C; }

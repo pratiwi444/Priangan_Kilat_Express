@@ -23,7 +23,7 @@
         <tr><td>Penerima</td><td>{{ $paket->nama_penerima }} ({{ $paket->telepon_penerima }})</td></tr>
         <tr><td>Kota tujuan</td><td>{{ $paket->kota_tujuan }}</td></tr>
         <tr><td>Zona</td><td>{{ $paket->zona?->nama }}@if ($paket->zona_manual) <span class="badge bg-warning text-dark">zona manual</span>@endif</td></tr>
-        <tr><td>Berat</td><td>{{ $paket->berat !== null ? $paket->berat . ' kg' : '-' }}@if ($paket->perlu_verifikasi) <span class="badge bg-danger">perlu verifikasi</span>@endif</td></tr>
+        <tr><td>Berat</td><td>@if ($paket->berat !== null) {{ (float) $paket->berat }} kg @else - @endif @if ($paket->perlu_verifikasi) <span class="tanda" title="Perlu verifikasi (berat belum ada)">?</span> <span class="badge bg-danger">perlu verifikasi</span>@endif</td></tr>
         <tr><td>Layanan</td><td>{{ ucfirst($paket->layanan) }}</td></tr>
         <tr><td>Kurir</td><td>{{ $paket->kurir ? $paket->kurir->kode_kurir . ' - ' . $paket->kurir->nama : '-' }}</td></tr>
         <tr><td>Jumlah gagal kirim</td><td>{{ $paket->jumlah_gagal }}</td></tr>

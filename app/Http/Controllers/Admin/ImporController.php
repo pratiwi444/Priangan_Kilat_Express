@@ -39,9 +39,10 @@ class ImporController extends Controller
         }
 
         return back()->withInput()->with('hasil', [
-            'berkas'      => $r->file('berkas')->getClientOriginalName(),
-            'baris'       => $impor->ringkas($lap, $jenis),
-            'tidak_valid' => $lap['tidak_valid'],
+        'berkas' => $r->file('berkas')->getClientOriginalName(),
+        'baris' => $impor->ringkas($lap, $jenis),
+        'tidak_valid' => $lap['tidak_valid'],
+        'resi_ganda' => $lap['resi_ganda'] ?? [],
         ]);
     }
 }
