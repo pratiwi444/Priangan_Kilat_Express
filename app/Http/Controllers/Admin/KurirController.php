@@ -84,6 +84,7 @@ class KurirController extends Controller
         ]);
         // cast 'hashed' pada model User otomatis meng-hash
         $kurir->user->update(['password' => $r->password, 'wajib_ganti_password' => true]);
+        $kurir->user->tokens()->delete();
 
         return back()->with('ok', 'Password ' . $kurir->kode_kurir . ' direset. Kurir wajib menggantinya saat login.');
     }
@@ -95,6 +96,7 @@ class KurirController extends Controller
             return back()->withErrors(['kurir' => 'Kurir masih membawa paket Dikirim, tidak bisa dinonaktifkan.']);
         }
         $kurir->update(['aktif' => false]);
+        $kurir->user->tokens()->delete();
 
         return back()->with('ok', 'Kurir dinonaktifkan.');
     }
