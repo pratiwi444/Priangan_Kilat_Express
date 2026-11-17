@@ -1,4 +1,3 @@
-<?php
 @extends('layouts.app')
 @section('judul', 'Ganti password')
 @section('isi')

@@ -5,35 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>@yield('judul') - Priangan Kilat Express</title>
   <link rel="stylesheet" href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
-<body class="bg-light">
-<nav class="navbar navbar-dark bg-dark px-3">
-  <span class="navbar-brand">Priangan Kilat Express</span>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="{{ asset('img/logo_icon.png') }}" width="34" height="34" alt="">
+    <span>Priangan Kilat Express</span>
+  </div>
   @auth
-    <div class="d-flex gap-3 align-items-center text-white">
-      {{-- Menu: tambahkan satu tautan per bab yang selesai --}}
-      @if (auth()->user()->role === 'admin')
-        <a class="text-white" href="{{ route('admin.paket.index') }}">Paket</a>
-        <a class="text-white" href="{{ route('admin.pelanggan.index') }}">Pelanggan</a>
-        <a class="text-white" href="{{ route('admin.kurir.index') }}">Kurir</a>
-        <a class="text-white" href="{{ route('admin.tarif') }}">Tarif</a>
-      @elseif (auth()->user()->role === 'manajer')
-        <a class="text-white" href="{{ route('manajer.pelanggan') }}">Data Pelanggan</a>
-        <a class="text-white" href="{{ route('manajer.kurir') }}">Data Kurir</a>
-        <a class="text-white" href="{{ route('manajer.tarif') }}">Tarif</a>
-      @endif
-      <span>{{ auth()->user()->nama }} ({{ auth()->user()->role }})</span>
-      <a class="btn btn-sm btn-outline-light" href="/ganti-password">Ganti password</a>
-      <form method="post" action="/logout" class="m-0">@csrf<button class="btn btn-sm btn-light">Keluar</button></form>
-    </div>
+    <div class="user"><span class="avatar"></span>{{ ucfirst(auth()->user()->role) }} <small>&#9662;</small></div>
   @endauth
-</nav>
-<div class="container py-4">
-  @if (session('ok')) <div class="alert alert-success">{{ session('ok') }}</div> @endif
-  @if ($errors->any())
-    <div class="alert alert-danger">@foreach ($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>
-  @endif
-  @yield('isi')
+</header>
+
+<div class="shell">
+  @auth
+  <aside class="sidebar">
+    <nav>
+      @if (auth()->user()->role === 'admin')
+        <a class="item {{ request()->is('admin/paket*') ? 'active' : '' }}" href="{{ route('admin.paket.index') }}">Paket</a>
+        <a class="item {{ request()->is('admin/penugasan*') ? 'active' : '' }}" href="{{ url('/admin/penugasan') }}">Penugasan Kurir</a>
+        <a class="item {{ request()->is('admin/setoran*') ? 'active' : '' }}" href="{{ url('/admin/setoran') }}">Setoran COD</a>
+        <a class="item {{ request()->is('admin/pelanggan*') ? 'active' : '' }}" href="{{ route('admin.pelanggan.index') }}">Pelanggan</a>
+        <a class="item {{ request()->is('admin/kurir*') ? 'active' : '' }}" href="{{ route('admin.kurir.index') }}">Kurir</a>
+        <a class="item {{ request()->is('admin/tarif*') ? 'active' : '' }}" href="{{ route('admin.tarif') }}">Tarif</a>
+        <a class="item {{ request()->is('admin/impor*') ? 'active' : '' }}" href="{{ url('/admin/impor') }}">Impor CSV</a>
+      @elseif (auth()->user()->role === 'manajer')
+        {{-- Menu Manajer sementara: sesuaikan setelah wireframe Manajer ada --}}
+        <a class="item {{ request()->is('manajer/tarif*') ? 'active' : '' }}" href="{{ route('manajer.tarif') }}">Tarif</a>
+        <a class="item {{ request()->is('manajer/laporan*') ? 'active' : '' }}" href="{{ url('/manajer/laporan') }}">Laporan</a>
+        <a class="item {{ request()->is('manajer/pelanggan*') ? 'active' : '' }}" href="{{ route('manajer.pelanggan') }}">Pelanggan</a>
+        <a class="item {{ request()->is('manajer/kurir*') ? 'active' : '' }}" href="{{ route('manajer.kurir') }}">Kurir</a>
+      @endif
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="/ganti-password">Ganti Password</a>
+      <form method="post" action="/logout">@csrf<button type="submit">Keluar</button></form>
+    </div>
+  </aside>
+  @endauth
+
+  <main class="content">
+    @if (session('ok')) <div class="alert alert-success">{{ session('ok') }}</div> @endif
+    @if ($errors->any())
+      <div class="alert alert-danger">@foreach ($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>
+    @endif
+    @yield('isi')
+  </main>
 </div>
 <script src="{{ asset('vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
 </body>
