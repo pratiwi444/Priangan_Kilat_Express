@@ -10,15 +10,19 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // id zona = nomor zona (1, 2, 3), karena Pusat Wilayah mengembalikan nomor zona
-        $zona = [
-            1 => ['Zona 1 (Bandung Raya)', 8000],
-            2 => ['Zona 2 (Jawa Barat lainnya)', 12000],
-            3 => ['Zona 3 (luar Jawa Barat)', 20000],
-        ];
-        foreach ($zona as $id => [$nama, $tarif]) {
-            Zona::firstOrCreate(['id' => $id], ['nama' => $nama, 'tarif_per_kg' => $tarif]);
+        // master zona dari CSV; firstOrCreate: seeder diulang tidak mengembalikan tarif yang sudah diubah Manajer
+        $fh = fopen(database_path('data/master_zona_tarif.csv'), 'r');
+        $header = array_map(fn ($h) => strtolower(trim((string) $h)), fgetcsv($fh, 0, ',', '"', ''));
+        while (($r = fgetcsv($fh, 0, ',', '"', '')) !== false) {
+            if ($r === [null] || count($r) !== count($header)) continue;
+            $r = array_combine($header, array_map('trim', $r));
+            Zona::firstOrCreate(
+                ['id' => (int) $r['zona']],   // id zona = nomor zona (dipakai Pusat Wilayah)
+                ['nama' => 'Zona ' . $r['zona'] . ' (' . $r['nama_zona'] . ')', 'tarif_per_kg' => (int) $r['tarif_per_kg']]
+            );
         }
+        fclose($fh);
+
         User::updateOrCreate(['username' => 'admin'],
             ['nama' => 'Admin Loket', 'password' => Hash::make('admin12345'), 'role' => 'admin']);
         User::updateOrCreate(['username' => 'manajer'],
