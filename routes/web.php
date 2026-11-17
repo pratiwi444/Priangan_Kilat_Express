@@ -4,8 +4,8 @@ use App\Http\Controllers\Admin\{PelangganController, KurirController, PaketContr
 use App\Http\Controllers\TarifController;
 use App\Http\Controllers\{AuthController, CekResiController};
 
-//Route::get('/', fn () => redirect('/cek-resi'));
-//Route::get('/cek-resi', [CekResiController::class, 'index']);
+Route::get('/', fn () => redirect('/cek-resi'));
+Route::get('/cek-resi', [CekResiController::class, 'index'])->name('cek-resi');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'form'])->name('login');
@@ -34,3 +34,5 @@ Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')
     Route::get('tarif', [TarifController::class, 'index'])->name('tarif');
 Route::post('tarif/{zona}', [TarifController::class, 'update'])->name('tarif.update');
 });
+Route::get('/', fn () => redirect('/cek-resi'));
+Route::get('/cek-resi', [CekResiController::class, 'index'])->name('cek-resi');

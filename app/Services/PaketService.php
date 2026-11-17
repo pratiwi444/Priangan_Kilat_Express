@@ -155,7 +155,7 @@ public function tugaskan(Paket $p, Kurir $kurir, User $admin): Paket
         $p->kurir_id = $kurir->id;
         $p->status = StatusPaket::Dikirim;
         $p->save();
-        $this->catat($p, $lama, StatusPaket::Dikirim, $admin, 'Ditugaskan ke ' . $kurir->kode_kurir);
+        $this->catat($p, $lama, StatusPaket::Dikirim, $admin, 'Ditugaskan ke kurir');
         return $p;
     });
 }

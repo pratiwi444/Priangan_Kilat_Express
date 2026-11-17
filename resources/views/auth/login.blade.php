@@ -20,6 +20,9 @@
         button:hover { background:#34495e; }
         .error { background:#fdecea; color:#b3261e; padding:10px 12px; border-radius:8px; margin-bottom:6px; font-size:14px; }
         .error-kecil { color:#b3261e; font-size:13px; margin-top:4px; }
+        a.cek { display:block; margin-top:12px; padding:11px; text-align:center; border:2px solid var(--navy);
+        border-radius:8px; color:var(--navy); font-weight:700; text-decoration:none; }
+        a.cek:hover { background:#eef6fb; }
     </style>
 </head>
 <body>
@@ -38,6 +41,7 @@
         @error('password') <div class="error-kecil">{{ $message }}</div> @enderror
 
         <button type="submit">Masuk</button>
+        <a class="cek" href="{{ route('cek-resi') }}">Cek Resi</a>
     </form>
 </body>
 </html>
