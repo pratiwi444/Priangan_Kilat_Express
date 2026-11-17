@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\{PelangganController, KurirController, PaketController};
+use App\Http\Controllers\Admin\{PelangganController, KurirController, PaketController, SetoranController};
 use App\Http\Controllers\TarifController;
 use App\Http\Controllers\{AuthController, CekResiController};
 
@@ -27,6 +27,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('paket', PaketController::class)->only(['index', 'create', 'store', 'show']);
     Route::post('paket/{paket}/status', [PaketController::class, 'ubahStatus'])->name('paket.status');
     Route::post('paket/{paket}/tugaskan', [PaketController::class, 'tugaskan'])->name('paket.tugaskan');
+    Route::get('setoran', [SetoranController::class, 'index'])->name('setoran.index');
+    Route::post('setoran', [SetoranController::class, 'store'])->name('setoran.store');
 });
 Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')->group(function () {
     Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan');

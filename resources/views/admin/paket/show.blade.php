@@ -27,8 +27,7 @@
         <tr><td>Layanan</td><td>{{ ucfirst($paket->layanan) }}</td></tr>
         <tr><td>Kurir</td><td>{{ $paket->kurir ? $paket->kurir->kode_kurir . ' - ' . $paket->kurir->nama : '-' }}</td></tr>
         <tr><td>Jumlah gagal kirim</td><td>{{ $paket->jumlah_gagal }}</td></tr>
-        <tr><td>Alamat</td><td>{ $paket->alamat_penerima ?? '_' }</td></tr>
-      </table>
+        <tr><td>Alamat</td><td>{{ $paket->alamat_penerima ?? '-' }}</td></tr>
     </div></div>
   </div>
 
