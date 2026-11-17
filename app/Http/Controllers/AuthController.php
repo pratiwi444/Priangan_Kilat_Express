@@ -20,8 +20,8 @@ public function login(Request $request)
         return back()->withErrors(['username' => 'Kurir memakai aplikasi APK.']);
     }
     $request->session()->regenerate();
-    return redirect(Auth::user()->role === 'admin' ? '/admin/paket' : '/manajer/tarif');
-}
+    return redirect(Auth::user()->role === 'admin' ? '/admin/paket' : '/manajer/laporan');
+    }
 
 public function logout(Request $request)
 {

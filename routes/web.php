@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\{PelangganController, KurirController, PaketController, SetoranController};
 use App\Http\Controllers\TarifController;
 use App\Http\Controllers\{AuthController, CekResiController};
+use App\Http\Controllers\Manajer\LaporanController;
 
 Route::get('/', fn () => redirect('/cek-resi'));
 Route::get('/cek-resi', [CekResiController::class, 'index'])->name('cek-resi');
@@ -34,7 +35,8 @@ Route::middleware(['auth', 'role:manajer'])->prefix('manajer')->name('manajer.')
     Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan');
     Route::get('kurir', [KurirController::class, 'index'])->name('kurir');
     Route::get('tarif', [TarifController::class, 'index'])->name('tarif');
-Route::post('tarif/{zona}', [TarifController::class, 'update'])->name('tarif.update');
+    Route::post('tarif/{zona}', [TarifController::class, 'update'])->name('tarif.update');
+    Route::get('laporan', [LaporanController::class, 'index'])->name('laporan');
 });
 Route::get('/', fn () => redirect('/cek-resi'));
 Route::get('/cek-resi', [CekResiController::class, 'index'])->name('cek-resi');
