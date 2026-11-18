@@ -14,8 +14,22 @@
     <span>Priangan Kilat Express</span>
   </div>
   @auth
-    <div class="user"><span class="avatar"></span>{{ ucfirst(auth()->user()->role) }} <small>&#9662;</small></div>
-  @endauth
+  <div class="dropdown">
+    <button class="btn-user dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="avatar">{{ strtoupper(mb_substr(auth()->user()->nama, 0, 1)) }}</span>
+      {{ auth()->user()->nama }}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+      <li class="px-3 py-2">
+        <div class="fw-bold">{{ auth()->user()->nama }}</div>
+        <div class="small text-muted">{{ '@' . auth()->user()->username }} &middot; {{ ucfirst(auth()->user()->role) }}</div>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="/ganti-password">Ganti password</a></li>
+      <li><form method="post" action="/logout">@csrf<button type="submit" class="dropdown-item">Keluar</button></form></li>
+    </ul>
+  </div>
+@endauth
 </header>
 
 <div class="shell">

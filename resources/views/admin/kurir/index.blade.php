@@ -20,10 +20,11 @@
         <div class="d-flex flex-wrap gap-2">
           <a class="btn btn-sm btn-outline-dark" href="{{ route('admin.kurir.edit', $k) }}">Ubah</a>
 
-          <form method="post" action="{{ route('admin.kurir.reset', $k) }}" class="d-inline-flex gap-1 m-0">
-            @csrf
-            <input name="password" class="form-control form-control-sm" style="width:170px" placeholder="Password sementara">
-            <button class="btn btn-sm btn-outline-warning">Reset</button>
+          <form method="post" action="{{ route('admin.kurir.reset', $k) }}" class="m-0"
+            onsubmit="var p = prompt('Password sementara untuk {{ $k->kode_kurir }} (minimal 8 karakter):'); if (!p) return false; this.password.value = p;">
+          @csrf
+           <input type="hidden" name="password">
+          <button class="btn btn-sm btn-outline-warning">Reset Password</button>
           </form>
 
           @if ($k->aktif)
