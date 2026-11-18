@@ -71,10 +71,9 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(Icons.local_shipping, size: 64, color: tema.colorScheme.primary),
+                Image.asset('assets/images/logo_priangan_kilat_express.png', height: 90, fit: BoxFit.contain),
                 const SizedBox(height: 8),
-                Text('Kurir PKE', textAlign: TextAlign.center, style: tema.textTheme.headlineMedium),
-                Text('Priangan Kilat Express', textAlign: TextAlign.center, style: tema.textTheme.bodyMedium),
+                Text('Aplikasi Kurir', textAlign: TextAlign.center, style: tema.textTheme.titleMedium),
                 const SizedBox(height: 32),
                 TextField(
                   controller: _kode,

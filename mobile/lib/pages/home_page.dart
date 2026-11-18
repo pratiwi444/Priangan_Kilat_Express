@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../api.dart';
 import '../ui.dart';
+import 'beranda_tab.dart';
 import 'detail_page.dart';
+import 'profil_tab.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,7 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _tab = 0;
-  int _versi = 0; // dinaikkan untuk memuat ulang kedua tab
+  int _versi = 0; // dinaikkan setelah lapor Terkirim/Gagal Kirim agar tab aktif memuat ulang
 
   void _muatUlang() => setState(() => _versi++);
 
@@ -39,6 +41,10 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Image.asset('assets/images/logo_icon.png'),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -46,24 +52,29 @@ class _HomePageState extends State<HomePage> {
             if (Api.nama.isNotEmpty) Text(Api.nama, style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
-        actions: [IconButton(tooltip: 'Keluar', icon: const Icon(Icons.logout), onPressed: _keluar)],
       ),
       body: IndexedStack(
         index: _tab,
         children: [
-          TugasTab(versi: _versi, onBerubah: _muatUlang),
-          CodTab(versi: _versi),
+          BerandaTab(
+            versi: _versi,
+            aktif: _tab == 0,
+            kePaket: () => setState(() => _tab = 1),
+            keCod: () => setState(() => _tab = 2),
+          ),
+          TugasTab(versi: _versi, aktif: _tab == 1, onBerubah: _muatUlang),
+          CodTab(versi: _versi, aktif: _tab == 2),
+          ProfilTab(onKeluar: _keluar),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() {
-          _tab = i;
-          _versi++;
-        }),
+        onDestinationSelected: (i) => setState(() => _tab = i),
         destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Beranda'),
           NavigationDestination(icon: Icon(Icons.inventory_2_outlined), selectedIcon: Icon(Icons.inventory_2), label: 'Paket'),
           NavigationDestination(icon: Icon(Icons.payments_outlined), selectedIcon: Icon(Icons.payments), label: 'COD'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
     );
@@ -74,8 +85,9 @@ class _HomePageState extends State<HomePage> {
 
 class TugasTab extends StatefulWidget {
   final int versi;
+  final bool aktif;
   final VoidCallback onBerubah;
-  const TugasTab({super.key, required this.versi, required this.onBerubah});
+  const TugasTab({super.key, required this.versi, required this.aktif, required this.onBerubah});
 
   @override
   State<TugasTab> createState() => _TugasTabState();
@@ -89,13 +101,13 @@ class _TugasTabState extends State<TugasTab> {
   @override
   void initState() {
     super.initState();
-    _muat();
+    if (widget.aktif) _muat();
   }
 
   @override
   void didUpdateWidget(TugasTab old) {
     super.didUpdateWidget(old);
-    if (old.versi != widget.versi) _muat(diam: true);
+    if (widget.aktif && (old.versi != widget.versi || !old.aktif)) _muat(diam: true);
   }
 
   Future<void> _muat({bool diam = false}) async {
@@ -209,7 +221,8 @@ class _TugasTabState extends State<TugasTab> {
 
 class CodTab extends StatefulWidget {
   final int versi;
-  const CodTab({super.key, required this.versi});
+  final bool aktif;
+  const CodTab({super.key, required this.versi, required this.aktif});
 
   @override
   State<CodTab> createState() => _CodTabState();
@@ -223,13 +236,13 @@ class _CodTabState extends State<CodTab> {
   @override
   void initState() {
     super.initState();
-    _muat();
+    if (widget.aktif) _muat();
   }
 
   @override
   void didUpdateWidget(CodTab old) {
     super.didUpdateWidget(old);
-    if (old.versi != widget.versi) _muat(diam: true);
+    if (widget.aktif && (old.versi != widget.versi || !old.aktif)) _muat(diam: true);
   }
 
   Future<void> _muat({bool diam = false}) async {

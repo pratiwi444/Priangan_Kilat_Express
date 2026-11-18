@@ -1,40 +1,51 @@
-name: Build APK Kurir
+name: Build APK Kurir PKE
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:        # bisa dijalankan manual dari tab Actions
   push:
+    branches: [main]
     paths:
       - 'mobile/**'
       - '.github/workflows/build-apk.yml'
 
 jobs:
-  apk:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: mobile
     steps:
-      - uses: actions/checkout@v4
+      - name: Ambil kode
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - name: Pasang Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
-      - uses: subosito/flutter-action@v2
+      - name: Pasang Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.47.4
           channel: stable
+          flutter-version: '3.47.4'
           cache: true
 
-      - run: flutter pub get
+      - name: Unduh dependensi
+        run: flutter pub get
 
-      # hanya error yang menggagalkan build
-      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - name: Tes
+        run: flutter test
 
-      - run: flutter build apk --release
+      - name: Buat ikon aplikasi dari logo
+        run: dart run flutter_launcher_icons
 
-      - uses: actions/upload-artifact@v4
+      - name: Build APK release
+        run: flutter build apk --release
+
+      - name: Unggah APK
+        uses: actions/upload-artifact@v4
         with:
-          name: app-kurir-apk
+          name: kurir-pke-apk
           path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
