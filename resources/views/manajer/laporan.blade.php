@@ -77,7 +77,7 @@
   </tbody>
 </table>
 
-<h6 class="mt-4">Performa kurir <span class="text-muted fw-normal">(pengantaran yang dilaporkan kurir pada periode)</span></h6>
+<h6 class="mt-4">Performa kurir <span class="text-muted fw-normal">(paket yang dipegang kurir, menurut tanggal masuk)</span></h6>
 <table class="table table-sm table-bordered bg-white" style="max-width:760px">
   <thead>
     <tr><th>Kurir</th><th class="text-end">Terkirim</th><th class="text-end">Gagal</th><th class="text-end">% Terkirim</th><th class="text-end">% Gagal</th></tr>

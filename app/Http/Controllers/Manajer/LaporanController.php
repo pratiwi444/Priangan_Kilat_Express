@@ -60,18 +60,17 @@ class LaporanController extends Controller
             ->orderBy('kurir.kode_kurir')
             ->get();
 
-        // 4. O3 Performa kurir: dari riwayat status yang dicatat kurir (Terkirim / Gagal Kirim) pada periode laporan.
-        //    Persentase = jumlah / (terkirim + gagal). Paket data awal tidak punya pelaku sehingga tidak ikut dihitung.
+        // 4. O3 Performa kurir: paket yang dipegang kurir dan masuk pada periode laporan.
+        //    Terkirim = paket berstatus Terkirim. Gagal = total percobaan gagal (jumlah_gagal; paket Retur = 2 kali gagal).
+        //    Persentase = jumlah / (terkirim + gagal).
         $performa = DB::table('kurir')
-            ->leftJoin('riwayat_status as r', function ($j) use ($dari, $sampai) {
-                $j->on('r.pelaku_id', '=', 'kurir.user_id')
-                  ->whereIn('r.status_ke', [StatusPaket::Terkirim->value, StatusPaket::GagalKirim->value])
-                  ->whereDate('r.waktu', '>=', $dari)
-                  ->whereDate('r.waktu', '<=', $sampai);
+            ->leftJoin('paket', function ($j) use ($dari, $sampai) {
+                $j->on('paket.kurir_id', '=', 'kurir.id')
+                  ->whereBetween('paket.tanggal_masuk', [$dari, $sampai]);
             })
             ->selectRaw("kurir.kode_kurir, kurir.nama,
-                sum(case when r.status_ke = 'terkirim' then 1 else 0 end) as terkirim,
-                sum(case when r.status_ke = 'gagal_kirim' then 1 else 0 end) as gagal")
+                sum(case when paket.status = 'terkirim' then 1 else 0 end) as terkirim,
+                coalesce(sum(paket.jumlah_gagal), 0) as gagal")
             ->groupBy('kurir.id', 'kurir.kode_kurir', 'kurir.nama')
             ->orderBy('kurir.kode_kurir')
             ->get();
