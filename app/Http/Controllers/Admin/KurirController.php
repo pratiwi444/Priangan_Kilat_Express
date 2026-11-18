@@ -89,6 +89,12 @@ class KurirController extends Controller
         return back()->with('ok', 'Password ' . $kurir->kode_kurir . ' direset. Kurir wajib menggantinya saat login.');
     }
 
+    public function aktifkan(Kurir $kurir)
+    {
+        $kurir->update(['aktif' => true]);
+        return back()->with('ok', 'Kurir ' . $kurir->kode_kurir . ' diaktifkan kembali.');
+    }
+
     public function nonaktifkan(Kurir $kurir)
     {
         // nilai status di database memakai huruf kecil ('dikirim'), sesuai enum StatusPaket

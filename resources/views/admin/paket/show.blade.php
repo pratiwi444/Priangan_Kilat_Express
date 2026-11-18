@@ -9,6 +9,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="m-0">{{ $paket->no_resi }}
     <span class="badge bg-{{ $warna[$paket->status->value] }} fs-6">{{ $paket->status->label() }}</span>
+    @if ($paket->tertahan) <span class="badge bg-danger fs-6">Tertahan &gt; 3 hari</span>@endif
   </h4>
   <a href="{{ route('admin.paket.index') }}" class="btn btn-outline-dark">Kembali</a>
 </div>
@@ -23,7 +24,14 @@
         <tr><td>Penerima</td><td>{{ $paket->nama_penerima }} ({{ $paket->telepon_penerima }})</td></tr>
         <tr><td>Kota tujuan</td><td>{{ $paket->kota_tujuan }}</td></tr>
         <tr><td>Zona</td><td>{{ $paket->zona?->nama }}@if ($paket->zona_manual) <span class="badge bg-warning text-dark">zona manual</span>@endif</td></tr>
-        <tr><td>Berat</td><td>@if ($paket->berat !== null) {{ (float) $paket->berat }} kg @else - @endif @if ($paket->perlu_verifikasi) <span class="tanda" title="Perlu verifikasi (berat belum ada)">?</span> <span class="badge bg-danger">perlu verifikasi</span>@endif</td></tr>
+        <tr><td>Berat</td><td>{{ $paket->berat !== null ? $paket->berat . ' kg' : '-' }}@if ($paket->perlu_verifikasi) <span class="badge bg-danger">perlu verifikasi</span>@endif</td></tr>
+        @if ($paket->berat_volumetrik !== null)
+          <tr><td>Dimensi (p x l x t)</td><td>{{ $paket->panjang_cm }} x {{ $paket->lebar_cm }} x {{ $paket->tinggi_cm }} cm</td></tr>
+          <tr><td>Berat volumetrik</td><td>{{ $paket->berat_volumetrik }} kg</td></tr>
+        @endif
+        @if ($paket->berat_tagih)
+          <tr><td>Berat ditagih</td><td>{{ $paket->berat_tagih }} kg</td></tr>
+        @endif
         <tr><td>Layanan</td><td>{{ ucfirst($paket->layanan) }}</td></tr>
         <tr><td>Kurir</td><td>{{ $paket->kurir ? $paket->kurir->kode_kurir . ' - ' . $paket->kurir->nama : '-' }}</td></tr>
         <tr><td>Jumlah gagal kirim</td><td>{{ $paket->jumlah_gagal }}</td></tr>
@@ -38,7 +46,10 @@
         <tr><td>Tarif per kg (saat transaksi)</td><td class="text-end">{{ $rp($paket->tarif_per_kg) }}</td></tr>
         <tr><td>Ongkir</td><td class="text-end">{{ $rp($paket->ongkir) }}</td></tr>
         <tr><td>Biaya COD</td><td class="text-end">{{ $rp($paket->biaya_cod) }}</td></tr>
-        <tr class="fw-bold"><td>Total</td><td class="text-end">{{ $rp($paket->ongkir + $paket->biaya_cod) }}</td></tr>
+        @if ($paket->asuransi)
+          <tr><td>Asuransi (0,5% dari nilai barang {{ $rp($paket->nilai_barang) }})</td><td class="text-end">{{ $rp($paket->biaya_asuransi) }}</td></tr>
+        @endif
+        <tr class="fw-bold"><td>Total</td><td class="text-end">{{ $rp($paket->ongkir + $paket->biaya_cod + $paket->biaya_asuransi) }}</td></tr>
         @if ($paket->is_cod)
           <tr><td>Nilai COD (ditagih kurir ke penerima)</td><td class="text-end">{{ $rp($paket->nilai_cod) }}</td></tr>
         @endif

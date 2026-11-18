@@ -15,27 +15,23 @@ class PaketController extends Controller
     public function __construct(private PaketService $svc) {}
 
     public function index(Request $r)
-{
-    $q = Paket::with(['kurir', 'zona'])->latest('id');
+    {
+        $q = Paket::with(['kurir', 'zona'])->denganTransitSejak()->latest('id');
 
-    if ($r->filled('status')) {
-        $q->where('status', $r->status);
-    }
-    if ($r->input('tanda') === 'verifikasi') {
-        $q->where('perlu_verifikasi', true);
-    }
-    if ($r->filled('cari')) {
-        $q->where(fn ($w) => $w->where('no_resi', 'like', "%{$r->cari}%")
-                               ->orWhere('nama_penerima', 'like', "%{$r->cari}%"));
-    }
+        if ($r->filled('status')) {
+            $q->where('status', $r->status);
+        }
+        if ($r->filled('cari')) {
+            $q->where(fn ($w) => $w->where('no_resi', 'like', "%{$r->cari}%")
+                                   ->orWhere('nama_penerima', 'like', "%{$r->cari}%"));
+        }
 
-    return view('admin.paket.index', [
-        'paket'      => $q->paginate(15)->withQueryString(),
-        'ringkas'    => Paket::selectRaw('status, count(*) n')->groupBy('status')->pluck('n', 'status'),
-        'status'     => StatusPaket::cases(),
-        'verifikasi' => Paket::where('perlu_verifikasi', true)->count(),
-    ]);
-}
+        return view('admin.paket.index', [
+            'paket'   => $q->paginate(15)->withQueryString(),
+            'ringkas' => Paket::selectRaw('status, count(*) n')->groupBy('status')->pluck('n', 'status'),
+            'status'  => StatusPaket::cases(),
+        ]);
+    }
 
     public function create()
     {
@@ -58,9 +54,15 @@ class PaketController extends Controller
             'is_cod'           => 'nullable|boolean',
             'nilai_cod'        => 'required_if:is_cod,1|nullable|integer|min:1',
             'zona_id_manual'   => 'nullable|exists:zona,id',
+            'panjang_cm'       => 'nullable|integer|min:1|max:1000|required_with:lebar_cm,tinggi_cm',
+            'lebar_cm'         => 'nullable|integer|min:1|max:1000|required_with:panjang_cm,tinggi_cm',
+            'tinggi_cm'        => 'nullable|integer|min:1|max:1000|required_with:panjang_cm,lebar_cm',
+            'asuransi'         => 'nullable|boolean',
+            'nilai_barang'     => 'required_if:asuransi,1|nullable|integer|min:1',
         ], [
             'required'          => ':attribute wajib diisi.',
-            'required_if'       => ':attribute wajib diisi bila paket COD.',
+            'required_if'       => ':attribute wajib diisi bila paket COD / diasuransikan.',
+            'required_with'     => 'Panjang, lebar, dan tinggi harus diisi semuanya.',
             'berat.gt'          => 'Berat harus lebih dari nol.',
             'berat.numeric'     => 'Berat harus berupa angka.',
             'nilai_cod.integer' => 'Nilai COD harus berupa angka bulat.',
@@ -100,7 +102,7 @@ class PaketController extends Controller
         return back()->with('ok', 'Paket ditugaskan. ');
     }
 
-   public function cekZona(Request $r)
+    public function cekZona(Request $r)
 {
     $d = $r->validate([
         'kota_tujuan'    => 'required|max:100',
@@ -108,14 +110,19 @@ class PaketController extends Controller
         'layanan'        => 'required|in:reguler,express',
         'nilai_cod'      => 'nullable|integer|min:1',
         'zona_id_manual' => 'nullable|exists:zona,id',
+        'panjang_cm'     => 'nullable|integer|min:1|max:1000|required_with:lebar_cm,tinggi_cm',
+        'lebar_cm'       => 'nullable|integer|min:1|max:1000|required_with:panjang_cm,tinggi_cm',
+        'tinggi_cm'      => 'nullable|integer|min:1|max:1000|required_with:panjang_cm,lebar_cm',
+        'asuransi'       => 'nullable|boolean',
+        'nilai_barang'   => 'required_if:asuransi,1|nullable|integer|min:1',
     ], [
-        'required' => ':attribute wajib diisi untuk cek zona.',
-        'berat.gt' => 'Berat harus lebih dari nol.',
-        'numeric'  => ':attribute harus berupa angka.',
+        'required_with' => 'Panjang, lebar, dan tinggi harus diisi semuanya.',
+        'required_if'   => ':attribute wajib diisi bila diasuransikan.',
+        'required'  => ':attribute wajib diisi untuk cek zona.',
+        'berat.gt'  => 'Berat harus lebih dari nol.',
+        'numeric'   => ':attribute harus berupa angka.',
     ], [
-        'kota_tujuan' => 'Kota tujuan',
-        'berat'       => 'Berat',
-        'layanan'     => 'Layanan',
+        'kota_tujuan' => 'Kota tujuan', 'berat' => 'Berat', 'layanan' => 'Layanan',
     ]);
 
     return response()->json($this->svc->pratinjau($d));

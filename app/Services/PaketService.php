@@ -7,7 +7,6 @@ use App\Services\PusatWilayah\PusatWilayahClient;
 use App\Support\Telepon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use App\Support\Tarif;
 
 class PaketService
 {
@@ -30,11 +29,12 @@ class PaketService
            $zona = Zona::findOrFail($zonaNo);
         }
 
-        $ongkir = Tarif::ongkir((float) $d['berat'], $zona->tarif_per_kg, $d['layanan']);
+        [$kgTagih, $opsi] = $this->hitungOpsional($d);
+        $ongkir = Tarif::ongkir((float) $kgTagih, $zona->tarif_per_kg, $d['layanan']);
         $isCod  = !empty($d['is_cod']);
         $nilai  = $isCod ? (int) $d['nilai_cod'] : 0;
 
-        return DB::transaction(function () use ($d, $admin, $zona, $manual, $ongkir, $isCod, $nilai) {
+        return DB::transaction(function () use ($d, $admin, $zona, $manual, $ongkir, $isCod, $nilai, $opsi) {
             $paket = Paket::create([
                 'no_resi'          => $this->resiBaru(),
                 'pelanggan_id'     => $d['pelanggan_id'],
@@ -54,22 +54,35 @@ class PaketService
                 'status'           => StatusPaket::Diterima,
                 'jumlah_gagal'     => 0,
                 'tanggal_masuk'    => now()->toDateString(),
-            ]);
+            ] + $opsi);
             $this->catat($paket, null, StatusPaket::Diterima, $admin, 'Paket diterima di loket');
             return $paket;
         });
     }
 
-     private function cariZonaAman(string $kota): ?int
+    /** O1 + O2: berat tagih (volumetrik bila lebih besar) dan asuransi opsional. */
+    private function hitungOpsional(array $d): array
     {
-        try {
-            return $this->wilayah->cariZona($kota);
-        } catch (\Throwable $e) {
-            report($e);
-            return null;
-        }
-    }
+        $p = (int) ($d['panjang_cm'] ?? 0);
+        $l = (int) ($d['lebar_cm'] ?? 0);
+        $t = (int) ($d['tinggi_cm'] ?? 0);
+        $adaDim = $p > 0 && $l > 0 && $t > 0;
+        $kg = Tarif::beratTagih((float) $d['berat'], $adaDim ? [$p, $l, $t] : null);
 
+        $asuransi = !empty($d['asuransi']);
+        $nilai = $asuransi ? (int) ($d['nilai_barang'] ?? 0) : 0;
+
+        return [$kg, [
+            'panjang_cm'       => $adaDim ? $p : null,
+            'lebar_cm'         => $adaDim ? $l : null,
+            'tinggi_cm'        => $adaDim ? $t : null,
+            'berat_volumetrik' => $adaDim ? round(Tarif::volumetrik($p, $l, $t), 2) : null,
+            'berat_tagih'      => $kg,
+            'asuransi'         => $asuransi,
+            'nilai_barang'     => $nilai,
+            'biaya_asuransi'   => $asuransi ? Tarif::biayaAsuransi($nilai) : 0,
+        ]];
+    }
 
     private function resiBaru(): string
     {
@@ -130,7 +143,8 @@ public function pratinjau(array $d): array
 
     if ($zona === null) return ['zona_ditemukan' => false];
 
-    $ongkir   = Tarif::ongkir((float) $d['berat'], $zona->tarif_per_kg, $d['layanan']);
+    [$kgTagih, $opsi] = $this->hitungOpsional($d);
+    $ongkir   = Tarif::ongkir((float) $kgTagih, $zona->tarif_per_kg, $d['layanan']);
     $nilai    = (int) ($d['nilai_cod'] ?? 0);
     $biayaCod = $nilai > 0 ? Tarif::biayaCod($nilai) : 0;
 
@@ -141,8 +155,57 @@ public function pratinjau(array $d): array
         'tarif_per_kg'   => $zona->tarif_per_kg,
         'ongkir'         => $ongkir,
         'biaya_cod'      => $biayaCod,
-        'total'          => $ongkir + $biayaCod,
+        'berat_tagih'    => $kgTagih,
+        'berat_volumetrik' => $opsi['berat_volumetrik'],
+        'biaya_asuransi' => $opsi['biaya_asuransi'],
+        'total'          => $ongkir + $biayaCod + $opsi['biaya_asuransi'],
     ];
+}
+
+/** Tugaskan satu atau banyak paket ke kurir. Dipakai halaman Penugasan dan halaman detail paket. */
+public function tugaskan(array|Paket $paket, Kurir $kurir, User $admin): int
+{
+    $ids = collect(is_array($paket) ? $paket : [$paket->id])
+        ->map(fn ($p) => $p instanceof Paket ? $p->id : (int) $p)->unique()->values();
+
+    return DB::transaction(function () use ($ids, $kurir, $admin) {
+        // kunci baris kurir supaya dua penugasan bersamaan tidak sama-sama lolos batas 20
+        $kurir = Kurir::whereKey($kurir->id)->lockForUpdate()->firstOrFail();
+        if (!$kurir->aktif) {
+            throw ValidationException::withMessages(['kurir_id' => 'Kurir nonaktif tidak bisa ditugaskan paket.']);
+        }
+
+        $pakets = Paket::whereIn('id', $ids)->lockForUpdate()->get();
+        if ($pakets->count() !== $ids->count()) {
+            throw ValidationException::withMessages(['paket_ids' => 'Data paket tidak valid.']);
+        }
+
+        foreach ($pakets as $p) {
+            $boleh = $p->status === StatusPaket::Transit
+                || ($p->status === StatusPaket::GagalKirim && $p->jumlah_gagal < 2);
+            if (!$boleh) {
+                throw ValidationException::withMessages([
+                    'paket_ids' => "Paket {$p->no_resi} berstatus {$p->status->label()}, tidak bisa ditugaskan.",
+                ]);
+            }
+        }
+
+        $sedang = Paket::where('kurir_id', $kurir->id)->where('status', StatusPaket::Dikirim)->count();
+        if ($sedang + $pakets->count() > 20) {
+            throw ValidationException::withMessages([
+                'kurir_id' => "Kapasitas kurir maksimal 20 paket Dikirim (saat ini $sedang, akan ditambah {$pakets->count()}).",
+            ]);
+        }
+
+        foreach ($pakets as $p) {
+            $dari = $p->status;
+            $p->status = StatusPaket::Dikirim;
+            $p->kurir_id = $kurir->id;
+            $p->save();
+            $this->catat($p, $dari, StatusPaket::Dikirim, $admin, 'Ditugaskan ke ' . $kurir->kode_kurir);
+        }
+        return $pakets->count();
+    });
 }
 
 private function tolak(string $pesan): never

@@ -2,26 +2,29 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\StatusPaket;
 use App\Http\Controllers\Controller;
 use App\Models\Kurir;
 use App\Models\Paket;
-use App\Models\RiwayatStatus;
 use App\Models\Zona;
+use App\Services\PaketService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PenugasanController extends Controller
 {
+    public function __construct(private PaketService $svc) {}
+
     public function index(Request $request)
     {
         $zonaId = $request->query('zona_id');
 
+        // siap ditugaskan: Transit, atau Gagal Kirim yang belum 2 kali gagal
         $pakets = Paket::query()
             ->where(function ($q) {
-                $q->where('status', 'Transit')
+                $q->where('status', StatusPaket::Transit->value)
                   ->orWhere(function ($q2) {
-                      $q2->where('status', 'Gagal Kirim')
-                          ->where('jumlah_gagal', '<', 2);
+                      $q2->where('status', StatusPaket::GagalKirim->value)
+                         ->where('jumlah_gagal', '<', 2);
                   });
             })
             ->when($zonaId, fn ($q) => $q->where('zona_id', $zonaId))
@@ -29,91 +32,29 @@ class PenugasanController extends Controller
             ->get();
 
         $kurirs = Kurir::where('aktif', true)
-            ->withCount([
-                'paket as jumlah_dikirim' => function ($q) {
-                    $q->where('status', 'Dikirim');
-                }
-            ])
+            ->withCount(['paket as jumlah_dikirim' => fn ($q) => $q->where('status', StatusPaket::Dikirim->value)])
             ->orderBy('kode_kurir')
             ->get();
 
         $zonas = Zona::orderBy('id')->get();
 
-        return view('admin.penugasan.index', compact(
-            'pakets',
-            'kurirs',
-            'zonas',
-            'zonaId'
-        ));
+        return view('admin.penugasan.index', compact('pakets', 'kurirs', 'zonas', 'zonaId'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kurir_id' => ['required', 'exists:kurir,id'],
-            'paket_ids' => ['required', 'array', 'min:1'],
+            'kurir_id'    => ['required', 'exists:kurir,id'],
+            'paket_ids'   => ['required', 'array', 'min:1'],
             'paket_ids.*' => ['required', 'exists:paket,id'],
+        ], [
+            'kurir_id.required'  => 'Pilih kurir terlebih dahulu.',
+            'paket_ids.required' => 'Pilih minimal satu paket.',
+            'paket_ids.min'      => 'Pilih minimal satu paket.',
         ]);
 
-        $kurir = Kurir::where('aktif', true)
-            ->findOrFail($data['kurir_id']);
+        $jumlah = $this->svc->tugaskan($data['paket_ids'], Kurir::findOrFail($data['kurir_id']), $request->user());
 
-        return DB::transaction(function () use ($data, $kurir, $request) {
-
-            $sedang = Paket::where('kurir_id', $kurir->id)
-                ->where('status', 'Dikirim')
-                ->lockForUpdate()
-                ->count();
-
-            $pakets = Paket::whereIn('id', $data['paket_ids'])
-                ->lockForUpdate()
-                ->get();
-
-            if ($pakets->count() !== count(array_unique($data['paket_ids']))) {
-                return back()->withErrors([
-                    'paket_ids' => 'Data paket tidak valid.'
-                ]);
-            }
-
-            if ($sedang + $pakets->count() > 20) {
-                return back()->withErrors([
-                    'kurir_id' => 'Kapasitas kurir maksimal 20 paket.'
-                ]);
-            }
-
-            foreach ($pakets as $p) {
-                $boleh = $p->status === 'Transit'
-                    || ($p->status === 'Gagal Kirim' && $p->jumlah_gagal < 2);
-
-                if (!$boleh) {
-                    return back()->withErrors([
-                        'paket_ids' => "Paket {$p->no_resi} tidak dapat ditugaskan."
-                    ]);
-                }
-            }
-
-            foreach ($pakets as $p) {
-                $dari = $p->status;
-
-                $p->update([
-                    'status' => 'Dikirim',
-                    'kurir_id' => $kurir->id
-                ]);
-
-                RiwayatStatus::create([
-                    'paket_id' => $p->id,
-                    'pelaku_id' => $request->user()->id,
-                    'status_dari' => $dari,
-                    'status_ke' => 'Dikirim',
-                    'catatan' => 'Ditugaskan ke ' . $kurir->kode_kurir,
-                    'waktu' => now(),
-                ]);
-            }
-
-            return back()->with(
-                'sukses',
-                $pakets->count() . ' paket berhasil ditugaskan.'
-            );
-        });
+        return back()->with('sukses', "$jumlah paket berhasil ditugaskan.");
     }
 }

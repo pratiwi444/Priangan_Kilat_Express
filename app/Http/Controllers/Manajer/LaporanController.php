@@ -41,7 +41,8 @@ class LaporanController extends Controller
                          count(*) as jumlah_paket,
                          sum(coalesce(paket.ongkir, 0)) as ongkir,
                          sum(coalesce(paket.biaya_cod, 0)) as biaya_cod,
-                         sum(coalesce(paket.ongkir, 0) + coalesce(paket.biaya_cod, 0)) as total")
+                         sum(coalesce(paket.biaya_asuransi, 0)) as biaya_asuransi,
+                         sum(coalesce(paket.ongkir, 0) + coalesce(paket.biaya_cod, 0) + coalesce(paket.biaya_asuransi, 0)) as total")
             ->groupBy('zona.id', 'zona.nama')
             ->orderByRaw('zona.id is null, zona.id')
             ->get();
@@ -59,6 +60,22 @@ class LaporanController extends Controller
             ->orderBy('kurir.kode_kurir')
             ->get();
 
-        return view('manajer.laporan', compact('dari', 'sampai', 'pengiriman', 'pendapatan', 'rekapCod'));
+        // 4. O3 Performa kurir: dari riwayat status yang dicatat kurir (Terkirim / Gagal Kirim) pada periode laporan.
+        //    Persentase = jumlah / (terkirim + gagal). Paket data awal tidak punya pelaku sehingga tidak ikut dihitung.
+        $performa = DB::table('kurir')
+            ->leftJoin('riwayat_status as r', function ($j) use ($dari, $sampai) {
+                $j->on('r.pelaku_id', '=', 'kurir.user_id')
+                  ->whereIn('r.status_ke', [StatusPaket::Terkirim->value, StatusPaket::GagalKirim->value])
+                  ->whereDate('r.waktu', '>=', $dari)
+                  ->whereDate('r.waktu', '<=', $sampai);
+            })
+            ->selectRaw("kurir.kode_kurir, kurir.nama,
+                sum(case when r.status_ke = 'terkirim' then 1 else 0 end) as terkirim,
+                sum(case when r.status_ke = 'gagal_kirim' then 1 else 0 end) as gagal")
+            ->groupBy('kurir.id', 'kurir.kode_kurir', 'kurir.nama')
+            ->orderBy('kurir.kode_kurir')
+            ->get();
+
+        return view('manajer.laporan', compact('dari', 'sampai', 'pengiriman', 'pendapatan', 'rekapCod', 'performa'));
     }
 }

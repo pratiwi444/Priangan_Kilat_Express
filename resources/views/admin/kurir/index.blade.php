@@ -32,6 +32,11 @@
             @csrf
             <button class="btn btn-sm btn-outline-danger">Nonaktifkan</button>
           </form>
+          @else
+          <form method="post" action="{{ route('admin.kurir.aktif', $k) }}" class="m-0">
+            @csrf
+            <button class="btn btn-sm btn-outline-success">Aktifkan</button>
+          </form>
           @endif
         </div>
       </td>

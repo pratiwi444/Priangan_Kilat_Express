@@ -45,6 +45,20 @@
       </div>
     </div>
 
+    <label class="form-label">Dimensi paket (cm) <span class="text-muted">- opsional, untuk berat volumetrik</span></label>
+    <div class="row g-2 mb-2">
+      <div class="col-4"><input name="panjang_cm" type="number" min="1" class="form-control" placeholder="Panjang" value="{{ old('panjang_cm') }}"></div>
+      <div class="col-4"><input name="lebar_cm" type="number" min="1" class="form-control" placeholder="Lebar" value="{{ old('lebar_cm') }}"></div>
+      <div class="col-4"><input name="tinggi_cm" type="number" min="1" class="form-control" placeholder="Tinggi" value="{{ old('tinggi_cm') }}"></div>
+    </div>
+
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="checkbox" name="asuransi" value="1" id="asuransi" @checked(old('asuransi'))>
+      <label class="form-check-label" for="asuransi">Asuransi (0,5% dari nilai barang)</label>
+    </div>
+    <label class="form-label">Nilai barang (Rp)</label>
+    <input name="nilai_barang" type="number" min="1" class="form-control mb-2" value="{{ old('nilai_barang') }}">
+
     <div class="form-check mb-2">
       <input class="form-check-input" type="checkbox" name="is_cod" value="1" id="is_cod" @checked(old('is_cod'))>
       <label class="form-check-label" for="is_cod">Paket COD</label>
@@ -80,7 +94,7 @@
   const selManual = document.getElementById('zonaManual');
   const rp = n => 'Rp' + Number(n).toLocaleString('id-ID');
 
-  ['kota_tujuan', 'berat', 'layanan', 'nilai_cod', 'is_cod'].forEach(n =>
+  ['kota_tujuan', 'berat', 'layanan', 'nilai_cod', 'is_cod', 'panjang_cm', 'lebar_cm', 'tinggi_cm', 'asuransi', 'nilai_barang'].forEach(n =>
     f[n].addEventListener('input', () => { hasil.innerHTML = ''; }));
 
   tombol.addEventListener('click', async () => {
@@ -91,6 +105,10 @@
       zona_id_manual: selManual.disabled ? '' : selManual.value,
     };
     if (f.is_cod.checked && f.nilai_cod.value) data.nilai_cod = f.nilai_cod.value;
+    if (f.panjang_cm.value || f.lebar_cm.value || f.tinggi_cm.value) {
+      data.panjang_cm = f.panjang_cm.value; data.lebar_cm = f.lebar_cm.value; data.tinggi_cm = f.tinggi_cm.value;
+    }
+    if (f.asuransi.checked) { data.asuransi = 1; data.nilai_barang = f.nilai_barang.value; }
 
     hasil.textContent = 'Memeriksa...';
     try {
@@ -124,7 +142,9 @@
           <div>${j.zona}${j.manual ? ' <span class="badge bg-warning text-dark">manual</span>' : ''} &middot; ${rp(j.tarif_per_kg)}/kg</div>
           <table class="table table-sm mb-0 mt-1">
             <tr><td>Ongkir</td><td class="text-end">${rp(j.ongkir)}</td></tr>
+            <tr><td>Berat ditagih</td><td class="text-end">${j.berat_tagih} kg${j.berat_volumetrik !== null ? ' (volumetrik ' + j.berat_volumetrik + ' kg)' : ''}</td></tr>
             <tr><td>Biaya COD</td><td class="text-end">${rp(j.biaya_cod)}</td></tr>
+            <tr><td>Asuransi</td><td class="text-end">${rp(j.biaya_asuransi)}</td></tr>
             <tr class="fw-bold"><td>Total dibayar pengirim</td><td class="text-end">${rp(j.total)}</td></tr>
           </table>
         </div>`;
