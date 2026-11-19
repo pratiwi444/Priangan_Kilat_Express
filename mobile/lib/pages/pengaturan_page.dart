@@ -72,7 +72,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
             autocorrect: false,
             decoration: const InputDecoration(
               labelText: 'Alamat API',
-              helperText: 'Emulator: http://10.0.2.2:8000/api\nHP: http://IP-laptop:8000/api (satu Wi-Fi)',
+              helperText: 'Cukup alamat server, akhiran /api ditambahkan otomatis.\nEmulator: http://10.0.2.2:8000\nHP: http://IP-laptop:8000 (satu Wi-Fi)',
               helperMaxLines: 3,
               border: OutlineInputBorder(),
             ),

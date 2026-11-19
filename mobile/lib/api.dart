@@ -5,8 +5,6 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Alamat bawaan: 10.0.2.2 = laptop host bila dijalankan di emulator Android.
-/// Di HP sungguhan, ubah lewat ikon pengaturan di layar login (contoh: http://192.168.1.10:8000/api).
 const String kBaseDefault = 'http://10.0.2.2:8000/api';
 
 class ApiException implements Exception {
@@ -107,6 +105,9 @@ class Api {
       s = s.substring(0, s.length - 1);
     }
     if (s.isNotEmpty && !s.startsWith('http')) s = 'http://$s';
+    // Bila hanya alamat server (tanpa path), tambahkan /api otomatis.
+    final u = Uri.tryParse(s);
+    if (u != null && u.hasAuthority && (u.path.isEmpty || u.path == '/')) s = '$s/api';
     return s;
   }
 
