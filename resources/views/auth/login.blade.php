@@ -5,24 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login · Priangan Kilat Express</title>
     <style>
-        :root { --navy:#2c3e50; --sky:#7ecdf4; --blue:#2484c4; --orange:#ff9f1c; }
+        :root { --primary:#2F5D4A; --pdark:#1F4032; --sage:#EEF3EF; --line:#C4D0C7; --field:#96A89D; --ink:#1C2621; }
         * { box-sizing:border-box; }
         body { margin:0; min-height:100vh; display:grid; place-items:center;
-               font-family:system-ui,Segoe UI,Arial,sans-serif; background:#eef6fb; }
+               font-family:system-ui,Segoe UI,Arial,sans-serif; background:var(--sage); }
         .kartu { width:100%; max-width:400px; background:#fff; padding:32px;
-                 border-radius:16px; box-shadow:0 8px 30px rgba(44,62,80,.12); }
+                 border-radius:16px; box-shadow:0 8px 30px rgba(31,64,50,.14); }
         .kartu img { display:block; width:240px; margin:0 auto 24px; }
-        label { display:block; font-weight:600; color:var(--navy); margin:14px 0 6px; }
-        input { width:100%; padding:11px 12px; border:1px solid #c5d3df; border-radius:8px; font-size:15px; }
-        input:focus { outline:2px solid var(--sky); border-color:var(--blue); }
+        label { display:block; font-weight:600; color:var(--ink); margin:14px 0 6px; }
+        input { width:100%; padding:11px 12px; border:1.5px solid var(--field); border-radius:8px; font-size:15px; }
+        input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(47,93,74,.2); }
         button { width:100%; margin-top:22px; padding:12px; border:0; border-radius:8px;
-                 background:var(--navy); color:#fff; font-size:16px; font-weight:700; cursor:pointer; }
-        button:hover { background:#34495e; }
+                 background:var(--primary); color:#fff; font-size:16px; font-weight:700; cursor:pointer; }
+        button:hover { background:var(--pdark); }
         .error { background:#fdecea; color:#b3261e; padding:10px 12px; border-radius:8px; margin-bottom:6px; font-size:14px; }
         .error-kecil { color:#b3261e; font-size:13px; margin-top:4px; }
-        a.cek { display:block; margin-top:12px; padding:11px; text-align:center; border:2px solid var(--navy);
-        border-radius:8px; color:var(--navy); font-weight:700; text-decoration:none; }
-        a.cek:hover { background:#eef6fb; }
+        a.cek { display:block; margin-top:12px; padding:11px; text-align:center; border:2px solid var(--primary);
+        border-radius:8px; color:var(--primary); font-weight:700; text-decoration:none; }
+        a.cek:hover { background:var(--sage); }
     </style>
 </head>
 <body>

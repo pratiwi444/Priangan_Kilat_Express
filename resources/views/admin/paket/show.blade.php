@@ -80,7 +80,7 @@
     <p class="text-muted mb-0">
       @if ($paket->status->final()) Status sudah final.
       @elseif ($paket->status === StatusPaket::Dikirim) Status diubah oleh kurir lewat APK.
-      @else Paket ini ditugaskan ke kurir lewat menu Penugasan Kurir (bab 7).
+      @else Paket ini diteruskan ke kurir lewat bagian Tugaskan ke kurir di bawah atau menu Penugasan Kurir.
       @endif
     </p>
   @endif

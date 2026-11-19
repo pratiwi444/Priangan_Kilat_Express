@@ -53,7 +53,6 @@
       @endif
     </nav>
     <div class="sidebar-bottom">
-      <a href="/ganti-password">Ganti Password</a>
       <form method="post" action="/logout">@csrf<button type="submit">Keluar</button></form>
     </div>
   </aside>

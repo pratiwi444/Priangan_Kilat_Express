@@ -17,7 +17,7 @@ Priangan Kilat Express adalah ekspedisi kecil milik Pak Dedi dengan satu hub di 
 | Server dan tampilan web | PHP 8.3, Laravel 13 (Blade + Bootstrap lokal) | Migrasi, validasi, dan middleware peran sudah tersedia sehingga hak akses diperiksa di sisi server. Web dan API dalam satu proyek (monolith). |
 | Database | MySQL (lewat Laragon) | Mendukung foreign key dan constraint unik (misalnya `no_resi`, satu setoran per paket), cocok untuk data relasional paket, kurir, dan setoran. |
 | REST API untuk APK | Laravel + token Laravel Sanctum | APK memanggil server lewat API bertoken; hak akses tetap diperiksa di server. |
-| APK Kurir | Flutter (Dart), paket `http` dan `shared_preferences` | Satu kode untuk aplikasi Android native (bukan WebView) dan saya sudah pernah memakainya. APK dibangun lewat GitHub Actions (`.github/workflows/build-apk.yml`) supaya tidak butuh Android SDK di laptop, lalu hasilnya disalin ke folder `apk/`. |
+| APK Kurir | Flutter (Dart), paket `http` dan `shared_preferences` | Satu kode untuk aplikasi Android native (bukan WebView). APK dibangun lewat GitHub Actions (`.github/workflows/build-apk.yml`) supaya tidak butuh Android SDK di laptop, lalu hasilnya disalin ke folder `apk/`. |
 
 ## 3. Cara menjalankan server
 
@@ -26,8 +26,8 @@ Langkah ini dibuat untuk **Windows dengan Laragon** (PHP 8.3, MySQL). Layanan Pu
 1. Jalankan Laragon, lalu klik Start All agar Apache dan MySQL aktif.
 2. Ambil repositori ke dalam folder `laragon\www`, lalu masuk ke foldernya.
    ```bash
-   git clone https://github.com/USERNAME/ekspedisi.git
-   cd ekspedisi
+   git clone https://github.com/pratiwi444/Priangan_Kilat_Express.git
+   cd Priangan_Kilat_Express
    ```
 3. Pasang dependensi.
    ```bash
@@ -69,13 +69,17 @@ Langkah ini dibuat untuk **Windows dengan Laragon** (PHP 8.3, MySQL). Layanan Pu
 
 Web dibuka di `http://127.0.0.1:8000` (halaman awal adalah cek resi publik; petugas masuk lewat halaman `/login`).
 
-Tes otomatis (perhitungan ongkir dan biaya COD): `php artisan test`.
+Setelah mengubah `.env` (misalnya API key), jalankan `php artisan config:clear` agar perubahan terbaca.
+
+Tes otomatis (perhitungan ongkir, biaya COD, berat volumetrik, dan asuransi): `php artisan test`.
 
 ## 4. Cara memasang APK
 
-1. Berkas APK ada di folder `apk/` dengan nama `priangan-kilat-express.apk`.
-2. Salin ke HP Android 8.0 (API 26) atau lebih baru, lalu pasang. Izinkan pemasangan dari sumber tidak dikenal bila diminta.
-3. Atur alamat server yang dipanggil APK: di layar login ketuk **ikon pengaturan (roda gigi)** di pojok kanan atas, isi **Alamat server**, misalnya `http://192.168.1.10:8000`. Isi dengan alamat IP laptop di jaringan yang sama dengan HP (cek dengan perintah `ipconfig`, bagian IPv4). Jangan memakai `localhost`, karena dari HP itu menunjuk ke HP sendiri, bukan ke server. Bila tidak ada Wi-Fi, hubungkan laptop ke hotspot HP.
+1. Berkas APK ada di folder `apk/` dengan nama `priangan-kilat-express.apk`. APK ini dibangun dari folder `mobile/` lewat GitHub Actions (tab Actions, artifact `kurir-pke-apk`).
+2. Salin ke HP Android 8.0 (API 26) atau lebih baru, lalu pasang. Izinkan pemasangan dari sumber tidak dikenal bila diminta. Bila sebelumnya sudah ada versi lama, hapus (uninstall) dulu karena tanda tangan build berbeda.
+3. Atur alamat server yang dipanggil APK: di layar login ketuk **ikon pengaturan (roda gigi)** di pojok kanan atas, isi **Alamat server**, misalnya `http://192.168.1.10:8000` (akhiran `/api` ditambahkan otomatis), lalu ketuk **Tes koneksi** dan **Simpan**. Isi dengan alamat IP laptop di jaringan yang sama dengan HP (cek dengan perintah `ipconfig`, bagian IPv4). Jangan memakai `localhost`, karena dari HP itu menunjuk ke HP sendiri, bukan ke server. Bila tidak ada Wi-Fi, hubungkan laptop ke hotspot HP.
+
+Untuk emulator Android, alamat servernya `http://10.0.2.2:8000`.
 
 ## 5. Akun uji
 
@@ -99,6 +103,7 @@ Semua kurir dari data awal (KUR-01 sampai KUR-08) memakai password sementara `ku
 | Logika impor (dipakai perintah dan halaman web Impor CSV) | `app/Services/ImporCsv.php` |
 | Seeder zona/tarif, akun Admin dan Manajer | `database/seeders/DatabaseSeeder.php` |
 | Seeder data demo | `database/seeders/DemoSeeder.php` |
+| Logika bisnis paket (status, penugasan, ongkir) | `app/Services/PaketService.php`, `app/Services/Tarif.php` |
 | Aplikasi kurir (Flutter) | `mobile/` (kode di `mobile/lib/`) |
 | Build APK otomatis | `.github/workflows/build-apk.yml` |
 | REST API untuk APK | `routes/api.php`, `app/Http/Controllers/Api/KurirApiController.php` |
@@ -117,8 +122,9 @@ Keadaan yang disiapkan seeder: kurir **KUR-02** memiliki tepat 20 paket berstatu
 | Hal | Keputusan |
 |---|---|
 | Cara menyimpan perubahan harga agar paket lama tidak berubah | Tarif per kg zona dan ongkir disalin ke data paket saat paket diinput (kolom `tarif_per_kg` dan `ongkir` di tabel `paket`). Laporan pendapatan memakai angka yang tersimpan di paket, bukan tarif zona yang sekarang. |
-| Aturan format telepon selain tanpa huruf dan minimal 10 digit | Hanya angka, panjang 10 sampai 13 digit, dan disimpan dalam format `08xxxxxxxxxx`. Input berawalan `+62` atau `62` diubah menjadi `0`. |
-| Zona dan layanan Pusat Wilayah | Server memanggil layanan (API key di `.env`). Di form Tambah Paket, tombol **Cek zona & biaya** menampilkan zona dan pratinjau ongkir, biaya COD, dan total. Bila layanan mati, API key ditolak, atau kota tidak dikenal (`zona: null`), Admin memilih zona manual dan paket ditandai "manual". Server menghitung ulang saat menyimpan. |
+| Aturan format telepon selain tanpa huruf dan minimal 10 digit | Hanya angka, diawali `0`, panjang 10 sampai 13 digit. Spasi, tanda hubung, dan tanda kurung dibuang; awalan `+62` atau `62` diubah menjadi `0` (contoh `+62812...` menjadi `0812...`). Nomor disimpan dalam bentuk yang sudah dirapikan. |
+| Penyamaran telepon di cek resi | 7 digit awal ditampilkan, sisanya diganti `xxxx` (contoh `0812789xxxx`). Penyamaran dilakukan di server. |
+| Zona dan layanan Pusat Wilayah | Server memanggil layanan (API key di `.env`, header `X-API-Key`, batas waktu 5 detik). Di form Tambah Paket, tombol **Cek zona & biaya** menampilkan zona dan pratinjau ongkir, biaya COD, dan total. Bila layanan mati, API key ditolak, atau kota tidak dikenal (`zona: null`), Admin memilih zona manual dan paket ditandai "manual". Server menghitung ulang saat menyimpan. |
 | Data awal: nomor resi tercatat dua kali | Digabung menjadi satu; baris pertama yang muncul di berkas yang dipertahankan. Jumlah yang digabung dilaporkan pada hasil impor (3 baris pada data penguji). |
 | Data awal: paket tanpa data berat | Tetap diimpor dan ditandai **"perlu verifikasi"** (ikon `?` dan lencana di daftar dan detail paket, ada filter "Perlu verifikasi"). Ongkirnya dikosongkan karena belum bisa dihitung. |
 | Data awal: nomor telepon berformat +62..., 62..., dan 08... | Dirapikan ke format `08xxxxxxxxxx`. Semua nomor tetap dapat diimpor; nomor yang tidak bisa dirapikan disimpan apa adanya, bukan menolak baris. |
@@ -127,8 +133,10 @@ Keadaan yang disiapkan seeder: kurir **KUR-02** memiliki tepat 20 paket berstatu
 | Data awal: paket historis | Zona diambil dari Pusat Wilayah dan ongkir dihitung saat impor bila berat ada. Alamat penerima kosong (CSV tidak memilikinya). Tanggal masuk = kolom `tanggal_terima`. Paket berstatus Retur diberi jumlah gagal 2. Paket COD berstatus Terkirim dicatat sudah disetor. Kurir pada paket disimpan sesuai CSV. |
 | Impor ulang | Data yang sudah ada dilewati dan tidak ditimpa (resi, kode kurir, atau telepon yang sama). Baris yang rusak dilewati dan dilaporkan; impor tidak berhenti. |
 | Password sementara kurir data awal | `kurir12345`, wajib diganti saat login pertama (lihat bagian 5). Reset oleh Admin memakai password sementara baru dan sesi lama kurir dicabut. |
-| Penugasan dan kapasitas | Admin menugaskan paket Transit (atau Gagal Kirim yang belum 2 kali) ke kurir aktif. Batas 20 paket Dikirim per kurir dihitung di server dalam transaksi. Kurir yang masih membawa paket Dikirim tidak bisa dinonaktifkan. |
-| Cek resi publik | Menampilkan riwayat (waktu, status, catatan) dan telepon yang disamarkan di server. Catatan penugasan tidak memuat kode atau nama kurir. |
+| Penugasan dan kapasitas | Admin menugaskan paket Transit (atau Gagal Kirim yang belum 2 kali) ke kurir aktif. Batas 20 paket Dikirim per kurir dihitung di server dalam transaksi dengan baris kurir dikunci. Kurir yang masih membawa paket Dikirim tidak bisa dinonaktifkan. Admin juga dapat mengaktifkan kembali kurir yang dinonaktifkan. |
+| Cek resi publik | Menampilkan riwayat (waktu, status, catatan) dan telepon yang disamarkan di server. Catatan penugasan berbunyi "Ditugaskan ke kurir" tanpa kode atau nama kurir. |
+| Performa kurir (opsional O3) | Periode mengikuti tanggal masuk paket. Terkirim = paket berstatus Terkirim milik kurir; gagal = total percobaan gagal (`jumlah_gagal`, paket Retur dihitung 2). Persentase = jumlah dibagi (terkirim + gagal). |
+| Paket tertahan (opsional O4) | Paket berstatus Transit lebih dari 3 hari, dihitung sejak status Transit terakhir pada riwayat. |
 
 ## 8. Lembar self-check
 
@@ -147,33 +155,34 @@ Klaim di bawah diisi setelah saya menguji sendiri tiap butir.
 | 9 | Laporan pengiriman dan pendapatan per zona per periode (menurut tanggal masuk); hak akses: tarif hanya bisa diubah Manajer, laporan hanya Manajer (peran lain ditolak, juga bila halaman dibuka lewat alamat langsung), data pelanggan dan kurir hanya diubah Admin | Ya | Login Manajer: Laporan per periode (atur dari 01/10/2026 untuk data awal). Login Admin, buka `/manajer/laporan` langsung: 403. Admin ubah tarif: ditolak. Manajer buka `/admin/pelanggan/create`: 403. |
 | 10 | Data awal CSV diimpor: resi ganda menjadi satu, paket tanpa berat bertanda "perlu verifikasi", telepon dirapikan | Ya | `migrate:fresh --seed` lalu `impor:data-awal`: 60 paket masuk dari 63 baris (3 resi ganda digabung). Daftar paket, filter "Perlu verifikasi": 5 paket berikon `?`. Telepon seragam `08...`. Impor juga bisa lewat menu Admin > Impor CSV. |
 | 11 | Integrasi Pusat Wilayah (dengan API key), fallback zona manual bila layanan mati atau kota tidak dikenal | Ya | Kota Bandung: zona terisi otomatis. Ubah satu huruf API key di `.env` (lalu `php artisan config:clear`) atau isi kota "Atlantis": zona dipilih manual, paket bertanda "manual", tanpa crash. |
-| 12 | Akun kurir lengkap (APK): dibuat Admin, login dengan kode kurir (KUR-01 dst.), password minimal 8 karakter, wajib ganti password saat login pertama, ganti password, lupa password direset Admin (wajib ganti saat login berikutnya), logout | **ISI: Ya/Tidak** (setelah uji di HP) | Admin buat kurir. Login APK, wajib ganti password; kurang dari 8 karakter ditolak. Admin reset, login lagi, wajib ganti. Logout. |
-| 13 | Kurir (APK) melihat paket berstatus Dikirim yang ditugaskan kepadanya dan mengubahnya menjadi Terkirim atau Gagal Kirim dengan catatan; paket kurir lain tidak bisa dibuka atau diubah | **ISI: Ya/Tidak** (setelah uji di HP) | Login kurir: hanya paket Dikirim miliknya. Ubah ke Terkirim; Gagal Kirim tanpa catatan ditolak. Paket kurir lain: ditolak (403). |
-| 14 | Kurir (APK) melihat paket COD berstatus Terkirim yang diantarnya dan total nilai COD yang belum disetor | **ISI: Ya/Tidak** (setelah uji di HP) | Buka tab COD di APK; setelah Admin catat setoran, total belum disetor berkurang. |
+| 12 | Akun kurir lengkap (APK): dibuat Admin, login dengan kode kurir (KUR-01 dst.), password minimal 8 karakter, wajib ganti password saat login pertama, ganti password, lupa password direset Admin (wajib ganti saat login berikutnya), logout | Ya | Admin buat kurir. Login APK, wajib ganti password; kurang dari 8 karakter ditolak. Admin reset, login lagi, wajib ganti. Logout (tab Profil). |
+| 13 | Kurir (APK) melihat paket berstatus Dikirim yang ditugaskan kepadanya dan mengubahnya menjadi Terkirim atau Gagal Kirim dengan catatan; paket kurir lain tidak bisa dibuka atau diubah | Ya | Login kurir: hanya paket Dikirim miliknya. Ubah ke Terkirim; Gagal Kirim tanpa catatan ditolak. Paket kurir lain: ditolak (403, diuji lewat API). |
+| 14 | Kurir (APK) melihat paket COD berstatus Terkirim yang diantarnya dan total nilai COD yang belum disetor | Ya | Buka tab COD di APK; setelah Admin catat setoran, total belum disetor berkurang. |
 
 Fitur opsional yang dikerjakan:
 
-| No | Fitur opsional | Dikerjakan (Ya/Tidak) |
-|---|---|---|
-| O1 | Berat volumetrik: panjang × lebar × tinggi (cm) ÷ 6000, dipakai bila lebih besar dari berat aktual | Tidak |
-| O2 | Asuransi opsional sebesar 0,5% dari nilai barang | Tidak |
-| O3 | Laporan performa kurir: persentase paket terkirim dan gagal | Tidak |
-| O4 | Penanda paket tertahan lebih dari 3 hari di status Transit | Tidak |
-| O5 | Reset password lewat email dengan server email tiruan lokal (mis. Mailpit) | Tidak |
+| No | Fitur opsional | Dikerjakan (Ya/Tidak) | Langkah uji singkat |
+|---|---|---|---|
+| O1 | Berat volumetrik: panjang × lebar × tinggi (cm) ÷ 6000, dipakai bila lebih besar dari berat aktual | Ya | Tambah paket Bandung, berat 2 kg, dimensi 50 × 40 × 30 cm: berat volumetrik 10 kg, berat ditagih 10 kg, ongkir Reguler Rp80.000. |
+| O2 | Asuransi opsional sebesar 0,5% dari nilai barang | Ya | Centang asuransi dengan nilai barang 1.000.000: biaya asuransi Rp5.000, ikut total dan kolom Asuransi di laporan pendapatan per zona. |
+| O3 | Laporan performa kurir: persentase paket terkirim dan gagal | Ya | Login Manajer > Laporan (periode dari 01/10/2026): tabel Performa kurir menampilkan terkirim, gagal, dan persentasenya per kurir. |
+| O4 | Penanda paket tertahan lebih dari 3 hari di status Transit | Ya | Daftar paket: paket Transit yang sudah lebih dari 3 hari (misalnya dari data awal) berlencana "Tertahan > 3 hari". |
+| O5 | Reset password lewat email dengan server email tiruan lokal (mis. Mailpit) | Tidak | - |
 
 ## 9. Belum selesai / keterbatasan
 
+- Fitur opsional O5 (reset password lewat email) tidak dikerjakan.
 - Form Tambah Paket berupa satu paket per form (wireframe awal berupa tabel banyak baris).
-- Penugasan kurir dilakukan per paket dari daftar penugasan/detail paket.
 - Zona otomatis membutuhkan internet ke layanan Pusat Wilayah; tanpa internet Admin memilih zona manual.
-- APK ditandatangani dengan kunci debug bawaan Flutter (cukup untuk pemasangan manual, bukan untuk toko aplikasi) dan dibangun lewat GitHub Actions; berkas yang dipakai wawancara adalah `apk/priangan-kilat-express.apk`.
+- APK ditandatangani dengan kunci debug bawaan Flutter (cukup untuk pemasangan manual, bukan untuk toko aplikasi) dan dibangun lewat GitHub Actions; berkas yang dipakai wawancara adalah `apk/priangan-kilat-express.apk`. Karena kunci debug berbeda tiap build, versi lama harus dihapus dulu sebelum memasang yang baru.
+- APK memakai HTTP biasa ke server lokal dan menyimpan token di penyimpanan aplikasi tanpa enkripsi; untuk produksi diperlukan HTTPS dan penyimpanan yang aman.
 - Alamat penerima untuk paket data awal kosong karena CSV tidak memilikinya.
-- Fitur opsional O1 sampai O5 tidak dikerjakan.
-- (Tulis di sini jujur butir yang belum berjalan sempurna setelah uji akhir.)
+- Cakupan tes otomatis masih terbatas pada perhitungan tarif; alur lain diuji manual sesuai lembar self-check.
+- Pada kasus yang sangat jarang (dua Admin menyimpan paket pertama pada hari yang sama di detik yang sama), salah satu penyimpanan ditolak oleh indeks unik `no_resi` (muncul error, bukan resi ganda).
 
 ## 10. Referensi dan Bantuan
 
 | Alat atau sumber | Dipakai untuk bagian | Yang saya ubah dari hasilnya |
 |---|---|---|
-| Claude (AI) | Draf README, ERD, diagram UML, wireframe UI, logo, bantuan menulis dan memperbaiki error kode Laravel (migrasi, seeder, impor CSV, REST API) dan penjelasan alur | Semua kode saya tempel, jalankan, dan uji sendiri; saya sesuaikan dengan dokumen soal, data CSV dari penguji, dan hasil uji (mis. nama variabel `.env`, aturan zona, tampilan) sebelum dipakai |
-| Dokumentasi Laravel, Laravel Sanctum, Flutter, dan Bootstrap | Referensi sintaks dan pemakaian paket | Disesuaikan dengan kebutuhan sistem ini |
+| Claude (AI) | Draf README, ERD, diagram UML, wireframe UI, logo, bantuan menulis dan memperbaiki error kode Laravel (migrasi, seeder, impor CSV, REST API); aplikasi Flutter kurir dan workflow GitHub Actions untuk build APK; fitur opsional O1 sampai O4; perbaikan bug penugasan; dokumen belajar untuk wawancara | Semua kode saya tempel, jalankan, dan uji sendiri; saya sesuaikan dengan dokumen soal, data CSV dari penguji, dan hasil uji (mis. nama variabel `.env`, aturan zona, migrasi ganda, tampilan login, menu profil, alamat server di APK) sebelum dipakai. Saya mempelajari alur kodenya sampai bisa menjelaskannya sendiri. |
+| Dokumentasi Laravel, Laravel Sanctum, Flutter, GitHub Actions, dan Bootstrap | Referensi sintaks dan pemakaian paket | Disesuaikan dengan kebutuhan sistem ini |

@@ -9,7 +9,6 @@ use App\Support\Telepon;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use App\Support\Tarif;
 
 /**
  * Impor data awal dari CSV. Dipakai oleh perintah `impor:data-awal` dan halaman Impor CSV.

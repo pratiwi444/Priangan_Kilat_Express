@@ -202,7 +202,7 @@ public function tugaskan(array|Paket $paket, Kurir $kurir, User $admin): int
             $p->status = StatusPaket::Dikirim;
             $p->kurir_id = $kurir->id;
             $p->save();
-            $this->catat($p, $dari, StatusPaket::Dikirim, $admin, 'Ditugaskan ke ' . $kurir->kode_kurir);
+            $this->catat($p, $dari, StatusPaket::Dikirim, $admin, 'Ditugaskan ke kurir');
         }
         return $pakets->count();
     });

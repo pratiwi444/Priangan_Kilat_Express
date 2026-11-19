@@ -81,7 +81,7 @@ class PaketController extends Controller
     {
         return view('admin.paket.show', [
             'paket' => $paket->load(['pelanggan', 'zona', 'kurir', 'riwayat.pelaku', 'setoran']),
-            'kurir' => Kurir::where('aktif', true)->orderBy('kode_kurir')->get(),   // dipakai di Bab 7
+            'kurir' => Kurir::where('aktif', true)->orderBy('kode_kurir')->get(),
         ]);
     }
 
