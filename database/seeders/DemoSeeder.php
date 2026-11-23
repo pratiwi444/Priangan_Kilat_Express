@@ -78,15 +78,16 @@ class DemoSeeder extends Seeder
                 'tanggal_masuk'    => now()->toDateString(),
             ]);
 
+            // riwayat: Diterima, Transit, Dikirim (tanpa pelaku karena dibuat seeder)
             $jalur = [
-                [null, StatusPaket::Diterima, 'Paket diterima di loket'],
-                [StatusPaket::Diterima, StatusPaket::Transit, null],
-                [StatusPaket::Transit, StatusPaket::Dikirim, 'Ditugaskan ke kurir'],
+                [null, StatusPaket::Diterima, 'Paket diterima di loket (data demo)', 2],
+                [StatusPaket::Diterima, StatusPaket::Transit, null, 1],
+                [StatusPaket::Transit, StatusPaket::Dikirim, 'Ditugaskan ke kurir', 0],
             ];
-            foreach ($jalur as $i => [$dari, $ke, $catatan]) {
+            foreach ($jalur as [$dari, $ke, $catatan, $jamLalu]) {
                 RiwayatStatus::create([
-                    'paket_id' => $paket->id, 'status_dari' => null, 'status_ke' => StatusPaket::Dikirim,
-                    'pelaku_id' => null, 'catatan' => 'Data demo (seeder)', 'waktu' => now(),
+                    'paket_id' => $paket->id, 'status_dari' => $dari, 'status_ke' => $ke,
+                    'pelaku_id' => null, 'catatan' => $catatan, 'waktu' => now()->subHours($jamLalu),
                 ]);
             }
 

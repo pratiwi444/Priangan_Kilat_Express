@@ -21,6 +21,9 @@ class PaketController extends Controller
         if ($r->filled('status')) {
             $q->where('status', $r->status);
         }
+        if ($r->boolean('perlu_verifikasi')) {
+            $q->where('perlu_verifikasi', true);
+        }
         if ($r->filled('cari')) {
             $q->where(fn ($w) => $w->where('no_resi', 'like', "%{$r->cari}%")
                                    ->orWhere('nama_penerima', 'like', "%{$r->cari}%"));
@@ -30,6 +33,7 @@ class PaketController extends Controller
             'paket'   => $q->paginate(15)->withQueryString(),
             'ringkas' => Paket::selectRaw('status, count(*) n')->groupBy('status')->pluck('n', 'status'),
             'status'  => StatusPaket::cases(),
+            'jumlahPerlu' => Paket::where('perlu_verifikasi', true)->count(),
         ]);
     }
 
@@ -81,7 +85,7 @@ class PaketController extends Controller
     {
         return view('admin.paket.show', [
             'paket' => $paket->load(['pelanggan', 'zona', 'kurir', 'riwayat.pelaku', 'setoran']),
-            'kurir' => Kurir::where('aktif', true)->orderBy('kode_kurir')->get(),
+            'kurir' => Kurir::where('aktif', true)->orderBy('kode_kurir')->get(),   // dipakai di Bab 7
         ]);
     }
 

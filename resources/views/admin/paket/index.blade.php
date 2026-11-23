@@ -25,12 +25,18 @@
       @endforeach
     </select>
   </div>
+  <div class="col-auto d-flex align-items-center">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="perlu_verifikasi" value="1" id="perlu_verifikasi" @checked(request()->boolean('perlu_verifikasi'))>
+      <label class="form-check-label" for="perlu_verifikasi">Perlu verifikasi ({{ $jumlahPerlu }})</label>
+    </div>
+  </div>
   <div class="col-auto"><button class="btn btn-outline-dark">Cari</button></div>
 </form>
 
 <table class="table table-sm table-bordered bg-white align-middle">
   <thead>
-    <tr><th>Resi</th><th>Masuk</th><th>Penerima</th><th>Kota tujuan</th><th>Zona</th><th>Layanan</th><th>Status</th><th>Kurir</th></tr>
+    <tr><th>Resi</th><th>Masuk</th><th>Penerima</th><th>Kota tujuan</th><th>Berat</th><th>Zona</th><th>Layanan</th><th>Status</th><th>Kurir</th></tr>
   </thead>
   <tbody>
   @forelse ($paket as $p)
@@ -39,13 +45,14 @@
       <td>{{ $p->tanggal_masuk->format('d/m/Y') }}</td>
       <td>{{ $p->nama_penerima }}</td>
       <td>{{ $p->kota_tujuan }}</td>
+      <td>@if ($p->berat !== null){{ rtrim(rtrim(number_format($p->berat, 2, ',', ''), '0'), ',') }} kg @else - @endif @if ($p->perlu_verifikasi)<span class="badge bg-danger" title="Berat belum tercatat">? perlu verifikasi</span>@endif</td>
       <td>{{ $p->zona?->nama }}@if ($p->zona_manual) <span class="badge bg-warning text-dark">manual</span>@endif</td>
       <td>{{ ucfirst($p->layanan) }}</td>
       <td><span class="badge bg-{{ $warna[$p->status->value] }}">{{ $p->status->label() }}</span>@if ($p->tertahan) <span class="badge bg-danger">Tertahan &gt; 3 hari</span>@endif</td>
       <td>{{ $p->kurir?->kode_kurir ?? '-' }}</td>
     </tr>
   @empty
-    <tr><td colspan="8" class="text-center text-muted">Belum ada paket.</td></tr>
+    <tr><td colspan="9" class="text-center text-muted">Belum ada paket.</td></tr>
   @endforelse
   </tbody>
 </table>
